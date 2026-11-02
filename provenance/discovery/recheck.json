@@ -1,0 +1,258 @@
+{
+  "review_date": "2026-11-01",
+  "timezone": "UTC+8",
+  "scope": "Public discovery only; no absolute nonexistence claim.",
+  "registry": {
+    "file": "mooncakes_modules_2026-11-01.json",
+    "endpoint": "https://mooncakes.io/api/v0/modules",
+    "record_count": 3518,
+    "fields": [
+      "name",
+      "description",
+      "keywords",
+      "repository"
+    ],
+    "patterns": [
+      "axml",
+      "apk",
+      "android",
+      "sparse",
+      "logcat",
+      "libsparse",
+      "simg2img",
+      "xml",
+      "plist",
+      "firmware"
+    ],
+    "finding": "No matching Android AXML, Android sparse-v1 image codec, or binary-logcat codec located. Similar names were inspected below."
+  },
+  "tools": [
+    "mcp__codex_apps__github_search_repositories",
+    "mcp__codex_apps__github_search",
+    "mcp__codex_apps__github_fetch",
+    "web__run"
+  ],
+  "searches": [
+    {
+      "kind": "github_repository",
+      "query": "MoonBit axml",
+      "result_count": 0
+    },
+    {
+      "kind": "github_repository",
+      "query": "MoonBit logcat",
+      "result_count": 0
+    },
+    {
+      "kind": "github_repository",
+      "query": "MoonBit sparse",
+      "results": [
+        "hp0200/moonbit-sparse-math",
+        "Zjyyer/moonbit-klt-tracker",
+        "Freon793/moonopt",
+        "red6667/moonldpc"
+      ],
+      "finding": "Numerical sparse matrices, feature tracking, optimization, and parity-check code; not Android image format."
+    },
+    {
+      "kind": "github_repository",
+      "query": "\"Android sparse\" MoonBit",
+      "result_count": 0
+    },
+    {
+      "kind": "github_repository",
+      "query": "\"logcat\" MoonBit",
+      "result_count": 0
+    },
+    {
+      "kind": "github_repository",
+      "query": "android language:MoonBit",
+      "results": [
+        "wzzc-dev/MoUI",
+        "fenriliuguang/wasmtime-android-kt-examples",
+        "moonbit-community/tonyfettes-raylib-android-games",
+        "moonbit-community/tonyfettes-android-raylib-minesweeper",
+        "moonbit-community/tonyfettes-android-raylib-battle-city",
+        "tonyfettes/tonyfettes-create-moonbit-raylib-android-app",
+        "bobzhang/games",
+        "zzj3720/mbui"
+      ]
+    },
+    {
+      "kind": "github_code",
+      "query": "AXML language:MoonBit",
+      "finding": "Substring matches RAxML phylogenetic wrapper and PdfMetadataXml types; not Android AXML."
+    },
+    {
+      "kind": "github_code",
+      "query": "\"RES_XML_TYPE\" language:MoonBit",
+      "result_count": 0
+    },
+    {
+      "kind": "github_code",
+      "query": "\"RES_STRING_POOL_TYPE\" language:MoonBit",
+      "result_count": 0
+    },
+    {
+      "kind": "github_code",
+      "query": "\"binary xml\" language:MoonBit",
+      "finding": "Only mirek/bitsql comment about SQL Server internal binary XML; not Android codec."
+    },
+    {
+      "kind": "github_code",
+      "query": "\"AndroidManifest\" language:MoonBit",
+      "finding": "MoUI builds plain-text manifests; still.fail APK tool invokes aapt2; raylib generator emits text templates. Sources were read."
+    },
+    {
+      "kind": "github_code",
+      "query": "\"simg2img\" language:MoonBit",
+      "result_count": 0
+    },
+    {
+      "kind": "github_code",
+      "query": "\"0xed26ff3a\" language:MoonBit",
+      "result_count": 0
+    },
+    {
+      "kind": "github_code",
+      "query": "\"CHUNK_TYPE_DONT_CARE\" language:MoonBit",
+      "result_count": 0
+    },
+    {
+      "kind": "github_code",
+      "query": "\"CHUNK_TYPE_RAW\" language:MoonBit",
+      "result_count": 0
+    },
+    {
+      "kind": "github_code",
+      "query": "\"libsparse\" language:MoonBit",
+      "result_count": 0
+    },
+    {
+      "kind": "github_code",
+      "query": "\"logger_entry\" language:MoonBit",
+      "result_count": 0
+    },
+    {
+      "kind": "github_code",
+      "query": "\"logcat\" language:MoonBit",
+      "finding": "MoUI marker-specific plain-text parser; still.fail comments; SDL log-category substring hits; no binary decoder located."
+    },
+    {
+      "kind": "web",
+      "query": "MoonBit AXML AndroidManifest binary XML",
+      "finding": "Mature non-MoonBit AXML implementations and unrelated MoonBite project."
+    },
+    {
+      "kind": "web",
+      "query": "MoonBit Android sparse image libsparse simg2img",
+      "finding": "AOSP and standalone non-MoonBit tools; no corresponding MoonBit codec located."
+    },
+    {
+      "kind": "web",
+      "query": "MoonBit logcat binary logger_entry",
+      "finding": "General log libraries and Android references; no corresponding MoonBit codec located."
+    },
+    {
+      "kind": "web",
+      "query": "MoonBit \"binary logcat\"",
+      "finding": "No matching MoonBit codec located."
+    },
+    {
+      "kind": "web",
+      "query": "MoonBit \"binary XML\" Android",
+      "finding": "General MoonBit XML parsers and mature Android binary-XML upstreams."
+    },
+    {
+      "kind": "web",
+      "query": "MoonBit \"sparse image\"",
+      "finding": "General sparse-image information, no matching MoonBit Android codec located."
+    },
+    {
+      "kind": "web",
+      "query": "MoonBit AXML parser",
+      "finding": "MoonBit language parser and text XML libraries; no matching Android codec located."
+    }
+  ],
+  "limitations": [
+    "The Mooncakes endpoint covers public registered module metadata, not every package source.",
+    "GitHub code search covers indexed default branches, not private repos, unindexed fresh repos, or all branches.",
+    "Repository language qualifiers may miss mixed-language projects; keyword and code searches were also used.",
+    "No public discovery method proves that nobody is independently implementing a topic.",
+    "Recheck immediately before submitting the application."
+  ],
+  "implementation_status": "Not implemented; no tests run; no contest registration submitted.",
+  "project": "moonbit-android-sparse",
+  "decision": "Recommend local project initiation for complete codec + streaming CLI",
+  "effort": {
+    "person_days": [
+      7,
+      10
+    ],
+    "hours_per_day": 8,
+    "total_hours": [
+      56,
+      80
+    ]
+  },
+  "closest_projects": [
+    {
+      "name": "hp0200/moonbit-sparse-math",
+      "url": "https://github.com/hp0200/moonbit-sparse-math/blob/main/README.md",
+      "read": true,
+      "difference": "CSR sparse matrices; not storage image format."
+    },
+    {
+      "name": "cn-wn/moonfetchledger",
+      "url": "https://github.com/cn-wn/moonfetchledger/blob/main/README.md",
+      "read": true,
+      "difference": "Block update/checkpoint/integrity recovery; does not document Android sparse-v1 format."
+    },
+    {
+      "name": "Zzqy-yi/firmware-image-toolkit",
+      "url": "https://github.com/Zzqy-yi/moonbit-firmware-image/blob/master/README.md",
+      "read": true,
+      "difference": "Intel HEX and Motorola S-record sparse address-map model; not Android magic 0xed26ff3a or its chunk format."
+    },
+    {
+      "name": "SongYZZZ/moon-firmware",
+      "url": "https://github.com/SongYZZZ/moon-firmware/blob/main/README.md",
+      "read": true,
+      "difference": "HEX/SREC, MCU/NOR update planning and sparse memory maps; no Android sparse-v1 codec documented."
+    }
+  ],
+  "upstreams": [
+    {
+      "name": "AOSP libsparse",
+      "url": "https://github.com/aosp-mirror/platform_system_core/tree/f7b2fc8117d44a26866f87392acbc5ad5c54d7a7/libsparse",
+      "commit": "f7b2fc8117d44a26866f87392acbc5ad5c54d7a7",
+      "license": "Apache-2.0",
+      "read": true,
+      "files": [
+        "sparse_format.h",
+        "include/sparse/sparse.h",
+        "Android.bp",
+        "sparse_fuzzer.cpp",
+        "img2simg.cpp",
+        "simg2img.cpp"
+      ],
+      "role": "Canonical format, library, command tools, fuzz harness"
+    },
+    {
+      "name": "AOSP fastboot",
+      "url": "https://github.com/aosp-mirror/platform_system_core/blob/main/fastboot/fastboot.cpp",
+      "read": true,
+      "role": "Real consumer invokes sparse_file_import_auto, sparse_file_resparse and sparse_file_len according to max-download-size"
+    },
+    {
+      "name": "anestisb/android-simg2img",
+      "url": "https://github.com/anestisb/android-simg2img",
+      "read": true,
+      "stars_on_review": 847,
+      "pushed_at_on_review": "2025-04-22T10:14:15Z",
+      "license": "AOSP source-file Apache-2.0 notices; repository API license=null; do not infer from null",
+      "role": "Mature standalone packaging of AOSP conversion tool"
+    }
+  ],
+  "fixture_plan": "Pinned AOSP libsparse harness creates mixed RAW/FILL/implicit-hole DONT_CARE/CRC32 images. simg2img expands to golden raw bytes. sparse_file_import(...,crc=true) validates checksums; simg2img itself passes crc=false and is not a CRC oracle. img2simg default NORMAL preserves all-zero blocks as data/FILL; -s maps actual file holes to DONT_CARE. No upstream binaries built or tests run in this review."
+}

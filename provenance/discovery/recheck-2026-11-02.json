@@ -1,0 +1,317 @@
+{
+  "checked_at": "2026-11-02T10:04:24+08:00",
+  "project": "moonbit-android-sparse",
+  "scope": "Public MoonBit Android sparse-v1 codec discovery; no absolute nonexistence claim.",
+  "registry": {
+    "endpoint": "https://mooncakes.io/api/v0/modules",
+    "record_count": 3520,
+    "fields": [
+      "name",
+      "description",
+      "keywords",
+      "repository"
+    ],
+    "matching_rule": "Case-insensitive literal substring search over the combined fields; per-term counts may overlap.",
+    "term_counts": {
+      "android": 5,
+      "sparse": 13,
+      "firmware": 2,
+      "libsparse": 0,
+      "simg2img": 0,
+      "img2simg": 0,
+      "fastboot": 0,
+      "0xed26ff3a": 0
+    },
+    "union_matches": 20,
+    "equivalent_declarations_located": 0,
+    "coverage": "Full live registry metadata, not every package source."
+  },
+  "github": {
+    "repository_searches": [
+      {
+        "query": "MoonBit sparse",
+        "returned_count": 4,
+        "repositories": [
+          "hp0200/moonbit-sparse-math",
+          "Zjyyer/moonbit-klt-tracker",
+          "Freon793/moonopt",
+          "red6667/moonldpc"
+        ]
+      },
+      {
+        "query": "\"Android sparse\" MoonBit",
+        "returned_count": 0,
+        "repositories": []
+      },
+      {
+        "query": "android language:MoonBit",
+        "returned_count": 8,
+        "repositories": [
+          "wzzc-dev/MoUI",
+          "moonbit-community/tonyfettes-raylib-android-games",
+          "moonbit-community/tonyfettes-android-raylib-minesweeper",
+          "fenriliuguang/wasmtime-android-kt-examples",
+          "moonbit-community/tonyfettes-android-raylib-battle-city",
+          "tonyfettes/tonyfettes-create-moonbit-raylib-android-app",
+          "bobzhang/games",
+          "zzj3720/mbui"
+        ]
+      },
+      {
+        "query": "libsparse MoonBit",
+        "returned_count": 0,
+        "repositories": []
+      },
+      {
+        "query": "simg2img MoonBit",
+        "returned_count": 0,
+        "repositories": []
+      },
+      {
+        "query": "\"sparse image\" MoonBit",
+        "returned_count": 0,
+        "repositories": []
+      },
+      {
+        "query": "moonbit firmware",
+        "returned_count": 4,
+        "repositories": [
+          "Zzqy-yi/moonbit-firmware-image",
+          "Trylaney/moon-uf2",
+          "SongYZZZ/moon-firmware",
+          "ssjssj183312-jpg/MoonUF2"
+        ]
+      },
+      {
+        "query": "moonbit fastboot",
+        "returned_count": 0,
+        "repositories": []
+      },
+      {
+        "query": "\"Android sparse\" in:readme language:MoonBit",
+        "returned_count": 0,
+        "repositories": []
+      },
+      {
+        "query": "simg2img MoonBit in:readme",
+        "returned_count": 0,
+        "repositories": []
+      },
+      {
+        "query": "\"稀疏镜像\" MoonBit in:readme",
+        "returned_count": 2,
+        "repositories": [
+          "ssjssj183312-jpg/MoonUF2",
+          "SongYZZZ/moon-firmware"
+        ]
+      }
+    ],
+    "code_searches": [
+      {
+        "query": "\"simg2img\" language:MoonBit",
+        "total_count": 0,
+        "incomplete_results": false,
+        "items": []
+      },
+      {
+        "query": "\"libsparse\" language:MoonBit",
+        "total_count": 0,
+        "incomplete_results": false,
+        "items": []
+      },
+      {
+        "query": "\"ed26ff3a\" language:MoonBit",
+        "total_count": 0,
+        "incomplete_results": false,
+        "items": []
+      },
+      {
+        "query": "\"CHUNK_TYPE_DONT_CARE\" language:MoonBit",
+        "total_count": 0,
+        "incomplete_results": false,
+        "items": []
+      },
+      {
+        "query": "\"img2simg\" extension:mbt",
+        "total_count": 0,
+        "incomplete_results": false,
+        "items": []
+      },
+      {
+        "query": "\"sparse_file_import\" extension:mbt",
+        "total_count": 0,
+        "incomplete_results": false,
+        "items": []
+      },
+      {
+        "query": "\"0xCAC1\" extension:mbt",
+        "total_count": 17,
+        "incomplete_results": false,
+        "items": [
+          {
+            "repository": "moonbitlang/office.mbt",
+            "path": "pdflite/text/cmapdata/pdf_text_cmap_gb_euc_data.mbt",
+            "url": "https://github.com/moonbitlang/office.mbt/blob/ab131f72ece4a0a306d836bcba67e5f647949b1b/pdflite/text/cmapdata/pdf_text_cmap_gb_euc_data.mbt"
+          },
+          {
+            "repository": "moonbitlang/office.mbt",
+            "path": "pdflite/text/cmapdata/pdf_text_cmap_ksc_euc_data.mbt",
+            "url": "https://github.com/moonbitlang/office.mbt/blob/ab131f72ece4a0a306d836bcba67e5f647949b1b/pdflite/text/cmapdata/pdf_text_cmap_ksc_euc_data.mbt"
+          },
+          {
+            "repository": "moonbitlang/office.mbt",
+            "path": "pdflite/text/cmapdata/pdf_text_cmap_gbpc_euc_data.mbt",
+            "url": "https://github.com/moonbitlang/office.mbt/blob/ab131f72ece4a0a306d836bcba67e5f647949b1b/pdflite/text/cmapdata/pdf_text_cmap_gbpc_euc_data.mbt"
+          },
+          {
+            "repository": "bobzhang/pdflite",
+            "path": "text/cmapdata/pdf_text_cmap_gb_euc_data.mbt",
+            "url": "https://github.com/bobzhang/pdflite/blob/b1f6f496c64c85eb802ae222fe0c2ec28b1b5a1b/text/cmapdata/pdf_text_cmap_gb_euc_data.mbt"
+          },
+          {
+            "repository": "bobzhang/pdflite",
+            "path": "text/cmapdata/pdf_text_cmap_ksc_euc_data.mbt",
+            "url": "https://github.com/bobzhang/pdflite/blob/b1f6f496c64c85eb802ae222fe0c2ec28b1b5a1b/text/cmapdata/pdf_text_cmap_ksc_euc_data.mbt"
+          },
+          {
+            "repository": "bobzhang/pdflite",
+            "path": "text/cmapdata/pdf_text_cmap_gbpc_euc_data.mbt",
+            "url": "https://github.com/bobzhang/pdflite/blob/b1f6f496c64c85eb802ae222fe0c2ec28b1b5a1b/text/cmapdata/pdf_text_cmap_gbpc_euc_data.mbt"
+          },
+          {
+            "repository": "ZSeanYves/MoonTFHE",
+            "path": "src/random/standard_cdt_boolean_110_lwe_041.mbt",
+            "url": "https://github.com/ZSeanYves/MoonTFHE/blob/f467fd0972b2b20b5d55883c05b608cb42a3b29e/src/random/standard_cdt_boolean_110_lwe_041.mbt"
+          },
+          {
+            "repository": "ZSeanYves/MoonTFHE",
+            "path": "src/random/standard_cdt_boolean_110_lwe_042.mbt",
+            "url": "https://github.com/ZSeanYves/MoonTFHE/blob/f467fd0972b2b20b5d55883c05b608cb42a3b29e/src/random/standard_cdt_boolean_110_lwe_042.mbt"
+          },
+          {
+            "repository": "ZSeanYves/MoonTFHE",
+            "path": "src/random/standard_cdt_boolean_110_lwe_038.mbt",
+            "url": "https://github.com/ZSeanYves/MoonTFHE/blob/f467fd0972b2b20b5d55883c05b608cb42a3b29e/src/random/standard_cdt_boolean_110_lwe_038.mbt"
+          },
+          {
+            "repository": "ZSeanYves/MoonTFHE",
+            "path": "src/random/standard_cdt_boolean_128_lwe_019.mbt",
+            "url": "https://github.com/ZSeanYves/MoonTFHE/blob/f467fd0972b2b20b5d55883c05b608cb42a3b29e/src/random/standard_cdt_boolean_128_lwe_019.mbt"
+          },
+          {
+            "repository": "ZSeanYves/MoonTFHE",
+            "path": "src/random/standard_cdt_boolean_128_lwe_006.mbt",
+            "url": "https://github.com/ZSeanYves/MoonTFHE/blob/f467fd0972b2b20b5d55883c05b608cb42a3b29e/src/random/standard_cdt_boolean_128_lwe_006.mbt"
+          },
+          {
+            "repository": "ZSeanYves/MoonTFHE",
+            "path": "src/random/standard_cdt_boolean_128_lwe_005.mbt",
+            "url": "https://github.com/ZSeanYves/MoonTFHE/blob/f467fd0972b2b20b5d55883c05b608cb42a3b29e/src/random/standard_cdt_boolean_128_lwe_005.mbt"
+          },
+          {
+            "repository": "ZSeanYves/MoonTFHE",
+            "path": "src/random/standard_cdt_boolean_110_lwe_033.mbt",
+            "url": "https://github.com/ZSeanYves/MoonTFHE/blob/f467fd0972b2b20b5d55883c05b608cb42a3b29e/src/random/standard_cdt_boolean_110_lwe_033.mbt"
+          },
+          {
+            "repository": "ZSeanYves/MoonTFHE",
+            "path": "src/random/standard_cdt_boolean_110_lwe_053.mbt",
+            "url": "https://github.com/ZSeanYves/MoonTFHE/blob/f467fd0972b2b20b5d55883c05b608cb42a3b29e/src/random/standard_cdt_boolean_110_lwe_053.mbt"
+          },
+          {
+            "repository": "ZSeanYves/MoonTFHE",
+            "path": "src/random/standard_cdt_boolean_110_lwe_007.mbt",
+            "url": "https://github.com/ZSeanYves/MoonTFHE/blob/f467fd0972b2b20b5d55883c05b608cb42a3b29e/src/random/standard_cdt_boolean_110_lwe_007.mbt"
+          },
+          {
+            "repository": "ZSeanYves/MoonTFHE",
+            "path": "src/random/standard_cdt_boolean_110_lwe_072.mbt",
+            "url": "https://github.com/ZSeanYves/MoonTFHE/blob/f467fd0972b2b20b5d55883c05b608cb42a3b29e/src/random/standard_cdt_boolean_110_lwe_072.mbt"
+          },
+          {
+            "repository": "ZSeanYves/MoonTFHE",
+            "path": "src/random/standard_cdt_boolean_110_lwe_075.mbt",
+            "url": "https://github.com/ZSeanYves/MoonTFHE/blob/f467fd0972b2b20b5d55883c05b608cb42a3b29e/src/random/standard_cdt_boolean_110_lwe_075.mbt"
+          }
+        ]
+      },
+      {
+        "query": "\"0xed26ff3a\" extension:mbt",
+        "total_count": 0,
+        "incomplete_results": false,
+        "items": []
+      },
+      {
+        "query": "\"CHUNK_TYPE_RAW\" extension:mbt",
+        "total_count": 0,
+        "incomplete_results": false,
+        "items": []
+      }
+    ],
+    "rate_limit_handling": "Three initial code requests were rate-limited and retried sequentially; final results above are successful responses.",
+    "low_specificity_probe": {
+      "query": "\"0xCAC1\" extension:mbt",
+      "classification": "17 paths belong to PDF CMap or cryptographic CDT data tables. Two representative sources were read; no complete audit of all 17 files is claimed.",
+      "sample_urls": [
+        "https://github.com/moonbitlang/office.mbt/blob/ab131f72ece4a0a306d836bcba67e5f647949b1b/pdflite/text/cmapdata/pdf_text_cmap_gb_euc_data.mbt",
+        "https://github.com/ZSeanYves/MoonTFHE/blob/f467fd0972b2b20b5d55883c05b608cb42a3b29e/src/random/standard_cdt_boolean_110_lwe_041.mbt"
+      ]
+    }
+  },
+  "web_queries": [
+    "MoonBit \"Android sparse\"",
+    "MoonBit libsparse simg2img img2simg",
+    "site:mooncakes.io android sparse",
+    "\"MoonBit\" \"sparse image\"",
+    "\"MoonBit\" \"稀疏镜像\"",
+    "\"MoonBit\" \"simg2img\"",
+    "\"MoonBit\" \"libsparse\""
+  ],
+  "nearby_review": {
+    "coverage": "Current README and root-directory inspection, not exhaustive source review.",
+    "repositories": [
+      {
+        "repository": "Zzqy-yi/moonbit-firmware-image",
+        "url": "https://github.com/Zzqy-yi/moonbit-firmware-image",
+        "scope": "Intel HEX/Motorola S-record codecs and sparse address maps"
+      },
+      {
+        "repository": "SongYZZZ/moon-firmware",
+        "url": "https://github.com/SongYZZZ/moon-firmware",
+        "scope": "NOR Flash update planning; current README describes v0.2.0 and reuses firmware-image-toolkit"
+      },
+      {
+        "repository": "cn-wn/moonfetchledger",
+        "url": "https://github.com/cn-wn/moonfetchledger",
+        "scope": "Cross-version file-block reuse, download recovery and integrity checks"
+      },
+      {
+        "repository": "hp0200/moonbit-sparse-math",
+        "url": "https://github.com/hp0200/moonbit-sparse-math",
+        "scope": "CSR sparse matrix/vector mathematics"
+      },
+      {
+        "repository": "Trylaney/moon-uf2",
+        "url": "https://github.com/Trylaney/moon-uf2",
+        "scope": "UF2 512-byte block codec"
+      },
+      {
+        "repository": "ssjssj183312-jpg/MoonUF2",
+        "url": "https://github.com/ssjssj183312-jpg/MoonUF2",
+        "scope": "UF2 codec, CLI and tests; About planning label is stale"
+      }
+    ],
+    "finding": "No Android sparse-v1 support declared in the inspected materials."
+  },
+  "non_moonbit_reference": {
+    "url": "https://github.com/anestisb/android-simg2img",
+    "scope": "Existing standalone C/C++ AOSP libsparse tools; this is not an unimplemented format across all languages."
+  },
+  "conclusion": "No equivalent public MoonBit Android sparse-v1 codec located in this recheck.",
+  "limitations": [
+    "Unpublished/private work, non-default branches and fresh unindexed repositories may be missed.",
+    "Language and filename filters do not cover every mixed-language implementation; repository/README and web aliases supplement them.",
+    "Registry metadata and README claims do not establish implementation completeness.",
+    "No implementation, AOSP tools or acceptance tests were run."
+  ]
+}
