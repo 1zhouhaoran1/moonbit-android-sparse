@@ -1,6 +1,6 @@
 ---
 name: MoonBit Android Sparse
-description: A restrained graphite workspace for precise local sparse-image inspection.
+description: 用于精确检查本地稀疏镜像的石墨色工作区。
 colors:
   workspace: "#171b20"
   surface: "#1d2229"
