@@ -1,0 +1,13 @@
+_build/
+.moon/
+node_modules/
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+inspector/dist/
+inspector/src/generated/*.js
+host/generated/
+output/
+.impeccable/

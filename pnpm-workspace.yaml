@@ -1,0 +1,4 @@
+packages:
+  - inspector
+allowBuilds:
+  esbuild: true

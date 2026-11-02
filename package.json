@@ -1,0 +1,16 @@
+{
+  "name": "moonbit-android-sparse-workspace",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.14.0",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "build:codec": "node tooling/compile-bridge.mjs",
+    "dev": "pnpm run build:codec && pnpm --dir inspector dev",
+    "build": "pnpm run build:codec && pnpm --dir inspector build",
+    "test": "node tooling/verify-core.mjs",
+    "cli": "node host/cli.mjs",
+    "sample": "node host/sample.mjs",
+    "test:host": "node tooling/verify-host.mjs"
+  }
+}
