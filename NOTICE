@@ -1,0 +1,10 @@
+MoonBit Android Sparse
+Copyright 2026 1zhouhaoran1
+
+This implementation follows the Android sparse image v1 format documented by
+the Android Open Source Project (AOSP), Apache License 2.0.
+Reference revision: f7b2fc8117d44a26866f87392acbc5ad5c54d7a7 (platform/system/core/libsparse).
+
+The oracle build script downloads upstream source files unchanged and retains
+their original copyright and license notices outside the repository.
+No vendor firmware or upstream binaries are distributed with this repository.
