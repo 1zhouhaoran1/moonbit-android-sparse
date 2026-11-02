@@ -1,0 +1,110 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "1zhouhaoran1/android_sparse"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn crc32_repeat(UInt32, UInt32, UInt64) -> UInt32
+
+pub fn crc32_update(UInt32, BytesView) -> UInt32
+
+pub fn default_limits() -> Limits
+
+pub fn encode(Array[Piece], max_output_bytes~ : UInt64, block_size? : UInt32, checksum? : Bool, limits? : Limits) -> Bytes raise
+
+pub fn pack(BytesView, max_output_bytes~ : UInt64, block_size? : UInt32, checksum? : Bool, limits? : Limits) -> Bytes raise
+
+pub fn write_sparse(Array[Piece], emit~ : (Bytes) -> Unit raise, block_size? : UInt32, checksum? : Bool, limits? : Limits) -> Unit raise
+
+// Errors
+pub(all) suberror SparseError {
+  Invalid(UInt64, String)
+  LimitExceeded(UInt64, String)
+} derive(Eq, @debug.Debug)
+pub fn SparseError::equal(Self, Self) -> Bool
+pub fn SparseError::not_equal(Self, Self) -> Bool
+pub fn SparseError::to_repr(Self) -> @debug.Repr
+
+// Types and methods
+pub(all) struct Chunk {
+  index : UInt32
+  kind : ChunkKind
+  input_offset : UInt64
+  output_offset : UInt64
+  blocks : UInt32
+  total_size : UInt32
+} derive(Eq, @debug.Debug)
+pub fn Chunk::equal(Self, Self) -> Bool
+pub fn Chunk::not_equal(Self, Self) -> Bool
+pub fn Chunk::to_repr(Self) -> @debug.Repr
+
+pub(all) enum ChunkKind {
+  Raw
+  Fill
+  Skip
+  Crc32
+} derive(Eq, @debug.Debug)
+pub fn ChunkKind::equal(Self, Self) -> Bool
+pub fn ChunkKind::not_equal(Self, Self) -> Bool
+pub fn ChunkKind::to_repr(Self) -> @debug.Repr
+
+pub struct Decoder {
+  // private fields
+}
+pub fn Decoder::buffered_bytes(Self) -> Int32
+pub fn Decoder::chunks_read(Self) -> UInt32
+pub fn Decoder::feed(Self, BytesView, (Event) -> Unit raise) -> Unit raise
+pub fn Decoder::finish(Self) -> Header raise
+pub fn Decoder::header(Self) -> Header?
+pub fn Decoder::input_offset(Self) -> UInt64
+pub fn Decoder::new(verify_crc? : Bool, limits? : Limits) -> Self
+pub fn Decoder::output_offset(Self) -> UInt64
+
+pub(all) enum Event {
+  FileHeader(Header)
+  ChunkHeader(Chunk)
+  RawData(BytesView)
+  FillData(UInt32, UInt64)
+  SkipData(UInt64)
+  Checksum(UInt32)
+} derive(@debug.Debug)
+pub fn Event::to_repr(Self) -> @debug.Repr
+
+pub(all) struct Header {
+  major_version : Int32
+  minor_version : Int32
+  file_header_size : Int32
+  chunk_header_size : Int32
+  block_size : UInt32
+  total_blocks : UInt32
+  total_chunks : UInt32
+  image_checksum : UInt32
+} derive(Eq, @debug.Debug)
+pub fn Header::equal(Self, Self) -> Bool
+pub fn Header::expanded_size(Self) -> UInt64
+pub fn Header::not_equal(Self, Self) -> Bool
+pub fn Header::to_repr(Self) -> @debug.Repr
+
+pub(all) struct Limits {
+  max_expanded_bytes : UInt64
+  max_crc_bytes : UInt64
+  max_chunks : UInt32
+} derive(Eq, @debug.Debug)
+pub fn Limits::equal(Self, Self) -> Bool
+pub fn Limits::not_equal(Self, Self) -> Bool
+pub fn Limits::to_repr(Self) -> @debug.Repr
+
+pub(all) enum Piece {
+  Data(Bytes)
+  Fill(UInt32, UInt32)
+  Hole(UInt32)
+} derive(Eq, @debug.Debug)
+pub fn Piece::equal(Self, Self) -> Bool
+pub fn Piece::not_equal(Self, Self) -> Bool
+pub fn Piece::to_repr(Self) -> @debug.Repr
+
+// Type aliases
+
+// Traits
