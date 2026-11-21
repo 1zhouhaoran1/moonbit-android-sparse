@@ -40,24 +40,15 @@ fn register(
   verify_crc : Bool,
   keep_chunks : Bool,
   output : ((Bytes) -> Unit)?,
-  max_output : UInt64,
+  limits : @sparse.Limits,
 ) -> Int32 {
   if registry.sessions.length() >= 16 {
     return -1
   }
   let id = registry.next_id
   registry.next_id = if id == 2147483647 { 1 } else { id + 1 }
-  let limits = @sparse.default_limits()
   registry.sessions[id] = {
-    decoder: @sparse.Decoder::new(verify_crc~, limits={
-      max_expanded_bytes: max_output,
-      max_crc_bytes: limits.max_crc_bytes,
-      max_chunks: if keep_chunks {
-        10000U
-      } else {
-        limits.max_chunks
-      },
-    }),
+    decoder: @sparse.Decoder::new(verify_crc~, limits~),
     chunks: [],
     verify_crc,
     keep_chunks,
@@ -72,14 +63,67 @@ fn register(
 ///|
 #export_name("create_inspector")
 pub fn create_inspector(verify_crc : Bool) -> Int32 {
-  register(verify_crc, true, None, 68719476736UL)
+  let limits = { ..@sparse.default_limits(), max_chunks: 10000U, }
+  register(verify_crc, true, None, limits)
 }
 
 ///|
-/// Validation without retaining chunk records for hosts that only need the final report.
-#export_name("create_validator")
-pub fn create_validator(verify_crc : Bool) -> Int32 {
-  register(verify_crc, false, None, @sparse.default_limits().max_expanded_bytes)
+fn is_safe_nonnegative_integer(value : Double) -> Bool {
+  value >= 0.0 &&
+  value <= 9007199254740991.0 &&
+  value == value.to_uint64().to_double()
+}
+
+///|
+fn host_limits(
+  max_output : Double,
+  max_crc : Double,
+  max_chunks : Double,
+) -> @sparse.Limits? {
+  if !is_safe_nonnegative_integer(max_output) ||
+    !is_safe_nonnegative_integer(max_crc) ||
+    !is_safe_nonnegative_integer(max_chunks) ||
+    max_chunks > 4294967295.0 {
+    return None
+  }
+  Some({
+    max_expanded_bytes: max_output.to_uint64(),
+    max_crc_bytes: max_crc.to_uint64(),
+    max_chunks: max_chunks.to_uint64().to_uint(),
+  })
+}
+
+///|
+#export_name("create_configured_reader")
+pub fn create_configured_reader(
+  verify_crc : Bool,
+  keep_chunks : Bool,
+  max_output : Double,
+  max_crc : Double,
+  max_chunks : Double,
+) -> Int32 {
+  guard host_limits(max_output, max_crc, max_chunks) is Some(limits) else {
+    return -1
+  }
+  if keep_chunks && limits.max_chunks > 10000U {
+    return -1
+  }
+  register(verify_crc, keep_chunks, None, limits)
+}
+
+///|
+#export_name("create_configured_expander")
+pub fn create_configured_expander(
+  verify_crc : Bool,
+  max_output : Double,
+  max_crc : Double,
+  max_chunks : Double,
+  output : (Bytes) -> Unit,
+) -> Int32 {
+  guard host_limits(max_output, max_crc, max_chunks) is Some(limits) else {
+    return -1
+  }
+  register(verify_crc, false, Some(output), limits)
 }
 
 ///|
@@ -90,10 +134,14 @@ pub fn create_expander(
   max_output_bytes : Double,
   output : (Bytes) -> Unit,
 ) -> Int32 {
-  if !(max_output_bytes >= 0.0 && max_output_bytes <= 9007199254740991.0) {
-    return -1
-  }
-  register(verify_crc, false, Some(output), max_output_bytes.to_uint64())
+  let limits = @sparse.default_limits()
+  create_configured_expander(
+    verify_crc,
+    max_output_bytes,
+    limits.max_crc_bytes.to_double(),
+    limits.max_chunks.to_double(),
+    output,
+  )
 }
 
 ///|

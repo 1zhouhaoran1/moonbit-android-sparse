@@ -5,13 +5,16 @@ import { randomUUID } from 'node:crypto';
 let codec;
 
 const MiB = 1024 * 1024;
+const DEFAULT_CRC_BYTES = 256 * MiB;
+const DEFAULT_CHUNKS = 1000000;
+const MAX_RETAINED_CHUNKS = 10000;
 const args = process.argv.slice(2).filter((arg, index) => !(index === 0 && arg === '--'));
 const command = args.shift();
 const delimiter = args.indexOf('--');
 const jsonRequested = args.slice(0, delimiter < 0 ? args.length : delimiter).includes('--json');
 const usage = {
-  inspect: 'inspect INPUT [--json] [--summary] [--crc|--no-crc]',
-  validate: 'validate INPUT [--json] [--crc|--no-crc]',
+  inspect: 'inspect INPUT [--json] [--summary] [--crc|--no-crc] [--max-output N]',
+  validate: 'validate INPUT [--json] [--crc|--no-crc] [--max-output N]',
   expand: 'expand INPUT OUTPUT [--json] [--crc|--no-crc] [--force] [--max-output N]',
   pack: 'pack INPUT OUTPUT [--json] [--force] [--block-size N] [--max-output N]',
 };
@@ -19,8 +22,8 @@ const help = ['Usage: pnpm cli <command> [options]', ...Object.values(usage).map
 const helpFor = name => Object.hasOwn(usage, name) ? 'Usage: pnpm cli ' + usage[name] : help;
 
 const commandOptions = {
-  inspect: ['--crc', '--no-crc', '--summary'],
-  validate: ['--crc', '--no-crc'],
+  inspect: ['--crc', '--no-crc', '--summary', '--max-output'],
+  validate: ['--crc', '--no-crc', '--max-output'],
   expand: ['--crc', '--no-crc', '--force', '--max-output'],
   pack: ['--force', '--block-size', '--max-output'],
 };
@@ -173,9 +176,9 @@ try {
         finally { codec.dispose_inspector(handle); }
       }));
     } else {
-      const handle = command === 'validate' || options.summary
-        ? codec.create_validator(verifyCrc)
-        : codec.create_inspector(verifyCrc);
+      const keepChunks = command === 'inspect' && !options.summary;
+      const handle = codec.create_configured_reader(verifyCrc, keepChunks, options.maxOutput,
+        DEFAULT_CRC_BYTES, keepChunks ? MAX_RETAINED_CHUNKS : DEFAULT_CHUNKS);
       if (handle < 0) throw new Error('Unable to create inspection session');
       try { report = withInput(input, file => readIntoSession(file, handle)); }
       finally { codec.dispose_inspector(handle); }

@@ -22,6 +22,12 @@ const inspected = cli('inspect', input, '--json', '--crc');
 assert.equal(inspected.status, 0, inspected.stderr || inspected.stdout);
 const report = JSON.parse(inspected.stdout);
 assert.equal(report.crcStatus, 'verified');
+for (const command of ['inspect', 'validate']) {
+  const rejected = cli(command, input, '--json', '--max-output', '32767');
+  assert.equal(rejected.status, 1);
+  assert.match(JSON.parse(rejected.stdout).error.message, /expanded size exceeds/i);
+  assert.equal(cli(command, input, '--max-output', '32768').status, 0);
+}
 assert.deepEqual(report.chunks.map(chunk => chunk.kind), ['RAW', 'FILL', 'DONT_CARE', 'FILL', 'CRC32']);
 const validated = cli('validate', input, '--json');
 assert.equal(validated.status, 0, validated.stderr || validated.stdout);
