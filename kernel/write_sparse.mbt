@@ -94,7 +94,7 @@ fn writer_plan(
 
 ///|
 fn writer_header(block_size : UInt32, plan : WriterPlan) -> Bytes {
-  let out = @buffer.Buffer(size_hint=28)
+  let out = @buffer.Buffer()
   out.write_uint_le(0xed26ff3aU)
   out.write_uint16_le(1U.to_uint16())
   out.write_uint16_le(0U.to_uint16())
@@ -110,7 +110,7 @@ fn writer_header(block_size : UInt32, plan : WriterPlan) -> Bytes {
 
 ///|
 fn writer_chunk_header(kind : UInt32, blocks : UInt32, size : UInt32) -> Bytes {
-  let out = @buffer.Buffer(size_hint=12)
+  let out = @buffer.Buffer()
   out.write_uint16_le(kind.to_uint16())
   out.write_uint16_le(0U.to_uint16())
   out.write_uint_le(blocks)
@@ -120,7 +120,7 @@ fn writer_chunk_header(kind : UInt32, blocks : UInt32, size : UInt32) -> Bytes {
 
 ///|
 fn writer_word(value : UInt32) -> Bytes {
-  let out = @buffer.Buffer(size_hint=4)
+  let out = @buffer.Buffer()
   out.write_uint_le(value)
   out.to_bytes()
 }
