@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, writeFileSync, readFileSync, existsSync, readdirSync, mkdirSync, unlinkSync, rmdirSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, readFileSync, existsSync, readdirSync, mkdirSync, unlinkSync, rmdirSync, linkSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -18,6 +18,30 @@ try {
   const sample = codec.make_sample();
   assert.equal(sample.length, 4196);
   writeFileSync(input, sample);
+  const help = cli('expand', '--help');
+  assert.equal(help.status, 0);
+  assert.match(help.stdout, /expand INPUT OUTPUT/);
+  assert.doesNotMatch(help.stdout, /--block-size/);
+  writeFileSync(join(directory, '--sample.img'), sample);
+  const literalPath = spawnSync(process.execPath, [join(root, 'host/cli.mjs'), 'inspect', '--json', '--', '--sample.img'],
+    { cwd: directory, encoding: 'utf8' });
+  assert.equal(literalPath.status, 0, literalPath.stderr || literalPath.stdout);
+  assert.equal(JSON.parse(literalPath.stdout).inputBytes, '4196');
+  const badOptions = cli('inspect', input, '--force', '--json');
+  assert.equal(badOptions.status, 1);
+  assert.equal(badOptions.stderr, '');
+  assert.match(JSON.parse(badOptions.stdout).error.message, /not supported by inspect/);
+  for (const size of ['0', '0x1000', '4e3', '9007199254740992']) {
+    const badNumber = cli('pack', input, packed, '--block-size', size, '--json');
+    assert.equal(badNumber.status, 1);
+    assert.match(JSON.parse(badNumber.stdout).error.message, /positive decimal safe integer/);
+  }
+  const alias = join(directory, 'same-file.img');
+  linkSync(input, alias);
+  const sameFile = cli('expand', input, alias, '--force');
+  assert.equal(sameFile.status, 1);
+  assert.match(sameFile.stderr, /same file/);
+  assert.deepEqual(readFileSync(alias), Buffer.from(sample));
   const inspected = cli('inspect', input, '--json', '--crc');
   assert.equal(inspected.status, 0, inspected.stderr || inspected.stdout);
   const report = JSON.parse(inspected.stdout);
