@@ -3,6 +3,8 @@
 priv struct Session {
   decoder : @sparse.Decoder
   chunks : Array[@sparse.Chunk]
+  count_by_kind : FixedArray[UInt32]
+  blocks_by_kind : FixedArray[UInt64]
   verify_crc : Bool
   keep_chunks : Bool
   output : ((Bytes) -> Unit)?
@@ -50,6 +52,8 @@ fn register(
   registry.sessions[id] = {
     decoder: @sparse.Decoder::new(verify_crc~, limits~),
     chunks: [],
+    count_by_kind: FixedArray::make(4, 0U),
+    blocks_by_kind: FixedArray::make(4, 0UL),
     verify_crc,
     keep_chunks,
     output,
@@ -178,12 +182,29 @@ fn emit_pattern(
 }
 
 ///|
+fn kind_index(kind : @sparse.ChunkKind) -> Int32 {
+  match kind {
+    @sparse.Raw => 0
+    @sparse.Fill => 1
+    @sparse.Skip => 2
+    @sparse.Crc32 => 3
+  }
+}
+
+///|
+let kind_names : FixedArray[String] = ["RAW", "FILL", "DONT_CARE", "CRC32"]
+
+///|
 fn accept_event(session : Session, event : @sparse.Event) -> Unit raise {
   match event {
-    @sparse.ChunkHeader(chunk) =>
+    @sparse.ChunkHeader(chunk) => {
+      let kind = kind_index(chunk.kind)
+      session.count_by_kind[kind] += 1U
+      session.blocks_by_kind[kind] += chunk.blocks.to_uint64()
       if session.keep_chunks {
         session.chunks.push(chunk)
       }
+    }
     @sparse.Checksum(_) => session.saw_checksum = true
     @sparse.RawData(data) =>
       match session.output {
@@ -254,20 +275,26 @@ fn header_json(header : @sparse.Header) -> Json {
 
 ///|
 fn chunk_json(chunk : @sparse.Chunk) -> Json {
-  let kind = match chunk.kind {
-    @sparse.Raw => "RAW"
-    @sparse.Fill => "FILL"
-    @sparse.Skip => "DONT_CARE"
-    @sparse.Crc32 => "CRC32"
-  }
   {
     "index": chunk.index.to_double(),
-    "kind": kind,
+    "kind": kind_names[kind_index(chunk.kind)],
     "inputOffset": chunk.input_offset.to_string(),
     "outputOffset": chunk.output_offset.to_string(),
     "blocks": chunk.blocks.to_double(),
     "totalSize": chunk.total_size.to_double(),
   }
+}
+
+///|
+fn allocation_json(session : Session, block_size : UInt64) -> Json {
+  let totals : Map[String, Json] = Map([])
+  for index in 0..<kind_names.length() {
+    totals[kind_names[index]] = {
+      "chunks": session.count_by_kind[index].to_double(),
+      "logicalBytes": (session.blocks_by_kind[index] * block_size).to_string(),
+    }
+  }
+  Json::object(totals)
 }
 
 ///|
@@ -293,6 +320,13 @@ fn report(session : Session) -> Json {
       None => Json::null()
     },
     "chunks": session.chunks.map(chunk_json),
+    "allocation": allocation_json(
+      session,
+      match header {
+        Some(value) => value.block_size.to_uint64()
+        None => 0UL
+      },
+    ),
     "inputBytes": session.decoder.input_offset().to_string(),
     "outputBytes": session.decoder.output_offset().to_string(),
     "chunksRead": session.decoder.chunks_read().to_double(),

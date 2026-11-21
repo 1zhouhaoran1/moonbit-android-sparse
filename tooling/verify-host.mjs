@@ -22,6 +22,12 @@ const inspected = cli('inspect', input, '--json', '--crc');
 assert.equal(inspected.status, 0, inspected.stderr || inspected.stdout);
 const report = JSON.parse(inspected.stdout);
 assert.equal(report.crcStatus, 'verified');
+assert.deepEqual(report.allocation, {
+  RAW: { chunks: 1, logicalBytes: '4096' },
+  FILL: { chunks: 2, logicalBytes: '16384' },
+  DONT_CARE: { chunks: 1, logicalBytes: '12288' },
+  CRC32: { chunks: 1, logicalBytes: '0' },
+});
 assert.equal(report.header.fileHeaderSize, 28);
 assert.equal(report.header.chunkHeaderSize, 12);
 const extendedSample = Buffer.concat([sample.subarray(0, 28), Buffer.alloc(4), sample.subarray(28)]);
