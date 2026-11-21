@@ -23,6 +23,25 @@ assert.equal(inspected.status, 0, inspected.stderr || inspected.stdout);
 const report = JSON.parse(inspected.stdout);
 assert.equal(report.crcStatus, 'verified');
 assert.deepEqual(report.chunks.map(chunk => chunk.kind), ['RAW', 'FILL', 'DONT_CARE', 'FILL', 'CRC32']);
+const validated = cli('validate', input, '--json');
+assert.equal(validated.status, 0, validated.stderr || validated.stdout);
+assert.deepEqual(JSON.parse(validated.stdout), { ...report, chunks: [] });
+const manyChunks = Buffer.alloc(28 + 10001 * 12);
+manyChunks.set(sample.subarray(0, 28));
+manyChunks.writeUInt32LE(10001, 16);
+manyChunks.writeUInt32LE(10001, 20);
+manyChunks.writeUInt32LE(0, 24);
+for (let i = 28; i < manyChunks.length; i += 12) {
+  manyChunks.writeUInt16LE(0xcac3, i);
+  manyChunks.writeUInt32LE(1, i + 4);
+  manyChunks.writeUInt32LE(12, i + 8);
+}
+const manyChunksInput = join(directory, 'many-chunks.img');
+writeFileSync(manyChunksInput, manyChunks);
+assert.equal(cli('inspect', manyChunksInput).status, 1, 'Detailed inspection caps retained rows');
+const largeValidation = cli('validate', manyChunksInput, '--json', '--no-crc');
+assert.equal(largeValidation.status, 0, largeValidation.stderr || largeValidation.stdout);
+assert.equal(JSON.parse(largeValidation.stdout).chunksRead, 10001);
 assert.equal(cli('expand', input, raw).status, 0);
 const expected = Buffer.alloc(32768);
 for (let i = 0; i < 4096; i++) expected[i] = (i * 37 + Math.floor(i / 17)) % 256;

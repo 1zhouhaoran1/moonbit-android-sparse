@@ -76,6 +76,13 @@ pub fn create_inspector(verify_crc : Bool) -> Int32 {
 }
 
 ///|
+/// Validation without retaining chunk records for hosts that only need the final report.
+#export_name("create_validator")
+pub fn create_validator(verify_crc : Bool) -> Int32 {
+  register(verify_crc, false, None, @sparse.default_limits().max_expanded_bytes)
+}
+
+///|
 /// The synchronous host sink enables bounded streaming file expansion.
 #export_name("create_expander")
 pub fn create_expander(

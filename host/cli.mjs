@@ -172,7 +172,9 @@ try {
         finally { codec.dispose_inspector(handle); }
       }));
     } else {
-      const handle = codec.create_inspector(verifyCrc);
+      const handle = command === 'validate'
+        ? codec.create_validator(verifyCrc)
+        : codec.create_inspector(verifyCrc);
       if (handle < 0) throw new Error('Unable to create inspection session');
       try { report = withInput(input, file => readIntoSession(file, handle)); }
       finally { codec.dispose_inspector(handle); }
