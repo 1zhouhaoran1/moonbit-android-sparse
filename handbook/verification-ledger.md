@@ -42,7 +42,7 @@
 ## 平台与交付声明
 
 - [ ] **主机/平台证据。** wasm-gc/JavaScript 核心、Node 主机、桌面/手机浏览器检查通过；待 Linux/native 流式/参考集成及其他适配。
-- [ ] **自动化复现。** 本地检查/构建脚本已运行；待 CI 配置/执行、接口检查及干净 checkout/参考证据。
+- [ ] **自动化复现。** 干净检出已通过依赖安装、核心测试、主机测试和浏览器构建。GitHub 的 [Verify 工作流](https://github.com/1zhouhaoran1/moonbit-android-sparse/actions/workflows/verify.yml)也执行这组检查。独立参考验证仍单独记录。
 - [ ] **独立制品来源。** 已有 LICENSE/NOTICE、source pin、合成生成器和 prepare 哈希；待归档 AOSP 语料、真实输出、源码/二进制/语料哈希。
 - [x] **范围声明。** 排除设备写入、resparse、USB、文件系统、boot-image 解析；浏览器仅为本地演示。2026-11-02 已复查重复。GitHub 源码仓库已公开，模块尚未发布至 Mooncakes。
 
