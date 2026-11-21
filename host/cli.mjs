@@ -29,8 +29,11 @@ function parseOptions(values) {
     else if (value === '--no-crc') options.noCrc = true;
     else if (value === '--force') options.force = true;
     else if (value === '--block-size' || value === '--max-output') {
-      const number = Number(values[++index]);
-      if (!Number.isSafeInteger(number) || number <= 0) throw new Error(`${value} requires a positive safe integer`);
+      const raw = values[++index];
+      const number = Number(raw);
+      if (!raw || !/^[0-9]+$/.test(raw) || !Number.isSafeInteger(number) || number <= 0) {
+        throw new Error(value + ' requires a positive decimal safe integer');
+      }
       options[value === '--block-size' ? 'blockSize' : 'maxOutput'] = number;
     } else if (value.startsWith('--')) throw new Error(`Unknown option: ${value}`);
     else options.paths.push(value);
