@@ -111,9 +111,13 @@ function writeAll(file, data) {
   }
 }
 
-function outputTransaction(input, destination, force, operation) {
+function outputTransaction(input, inputInfo, destination, force, operation) {
   const output = resolve(destination);
   if (resolve(input) === output) throw new Error('Input and output paths must differ');
+  const outputInfo = statSync(output, { bigint: true, throwIfNoEntry: false });
+  if (outputInfo && outputInfo.ino !== 0n && outputInfo.dev === inputInfo.dev && outputInfo.ino === inputInfo.ino) {
+    throw new Error('Input and output refer to the same file');
+  }
   if (!force && existsSync(output)) throw new Error('Output exists; choose another path or pass --force');
   const temporary = join(dirname(output), `.${basename(output)}.${randomUUID()}.tmp`);
   let file;
@@ -157,11 +161,11 @@ try {
         if (size === 0 || size % options.blockSize !== 0) throw new Error('Raw input must contain complete blocks; partial final blocks are rejected');
         const packed = codec.pack_bytes(readRaw(inputFile, size), options.blockSize);
         if (packed.length > options.maxOutput) throw new Error('Serialized output exceeds --max-output');
-        outputTransaction(input, output, options.force, file => writeAll(file, packed));
+        outputTransaction(input, info, output, options.force, file => writeAll(file, packed));
         return { ok: true, command, inputBytes: String(size), outputBytes: String(packed.length), output: resolve(output) };
       });
     } else if (command === 'expand') {
-      report = withInput(input, inputFile => outputTransaction(input, output, options.force, file => {
+      report = withInput(input, (inputFile, info) => outputTransaction(input, info, output, options.force, file => {
         const handle = codec.create_expander(verifyCrc, options.maxOutput, bytes => writeAll(file, bytes));
         if (handle < 0) throw new Error('Unable to create expansion session');
         try { return readIntoSession(inputFile, handle); }
