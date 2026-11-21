@@ -13,18 +13,18 @@ const command = args.shift();
 const delimiter = args.indexOf('--');
 const jsonRequested = args.slice(0, delimiter < 0 ? args.length : delimiter).includes('--json');
 const usage = {
-  inspect: 'inspect INPUT [--json] [--summary] [--crc|--no-crc] [--max-output N] [--max-crc-bytes N]',
-  validate: 'validate INPUT [--json] [--crc|--no-crc] [--max-output N] [--max-crc-bytes N]',
-  expand: 'expand INPUT OUTPUT [--json] [--crc|--no-crc] [--force] [--max-output N] [--max-crc-bytes N]',
+  inspect: 'inspect INPUT [--json] [--summary] [--crc|--no-crc] [--max-output N] [--max-crc-bytes N] [--max-chunks N]',
+  validate: 'validate INPUT [--json] [--crc|--no-crc] [--max-output N] [--max-crc-bytes N] [--max-chunks N]',
+  expand: 'expand INPUT OUTPUT [--json] [--crc|--no-crc] [--force] [--max-output N] [--max-crc-bytes N] [--max-chunks N]',
   pack: 'pack INPUT OUTPUT [--json] [--force] [--block-size N] [--max-output N]',
 };
 const help = ['Usage: pnpm cli <command> [options]', ...Object.values(usage).map(line => '  pnpm cli ' + line)].join('\n');
 const helpFor = name => Object.hasOwn(usage, name) ? 'Usage: pnpm cli ' + usage[name] : help;
 
 const commandOptions = {
-  inspect: ['--crc', '--no-crc', '--summary', '--max-output', '--max-crc-bytes'],
-  validate: ['--crc', '--no-crc', '--max-output', '--max-crc-bytes'],
-  expand: ['--crc', '--no-crc', '--force', '--max-output', '--max-crc-bytes'],
+  inspect: ['--crc', '--no-crc', '--summary', '--max-output', '--max-crc-bytes', '--max-chunks'],
+  validate: ['--crc', '--no-crc', '--max-output', '--max-crc-bytes', '--max-chunks'],
+  expand: ['--crc', '--no-crc', '--force', '--max-output', '--max-crc-bytes', '--max-chunks'],
   pack: ['--force', '--block-size', '--max-output'],
 };
 
@@ -32,6 +32,7 @@ const numericOptions = {
   '--block-size': 'blockSize',
   '--max-output': 'maxOutput',
   '--max-crc-bytes': 'maxCrcBytes',
+  '--max-chunks': 'maxChunks',
 };
 
 function parseOptions(values) {
@@ -165,6 +166,12 @@ try {
       throw new Error('--max-crc-bytes requires CRC verification');
     }
     const maxCrcBytes = options.maxCrcBytes ?? DEFAULT_CRC_BYTES;
+    const keepChunks = command === 'inspect' && !options.summary;
+    if (keepChunks && options.maxChunks > MAX_RETAINED_CHUNKS) {
+      throw new Error('Detailed inspection supports at most 10000 chunks; use --summary for larger images');
+    }
+    if (options.maxChunks > 0xffffffff) throw new Error('--max-chunks must fit an unsigned 32-bit integer');
+    const maxChunks = options.maxChunks ?? (keepChunks ? MAX_RETAINED_CHUNKS : DEFAULT_CHUNKS);
     let report;
     codec = await import('./generated/sparse.js');
     if (command === 'pack') {
@@ -181,15 +188,14 @@ try {
     } else if (command === 'expand') {
       report = withInput(input, (inputFile, info) => outputTransaction(input, info, output, options.force, file => {
         const handle = codec.create_configured_expander(verifyCrc, options.maxOutput, maxCrcBytes,
-          DEFAULT_CHUNKS, bytes => writeAll(file, bytes));
+          maxChunks, bytes => writeAll(file, bytes));
         if (handle < 0) throw new Error('Unable to create expansion session');
         try { return readIntoSession(inputFile, handle); }
         finally { codec.dispose_inspector(handle); }
       }));
     } else {
-      const keepChunks = command === 'inspect' && !options.summary;
       const handle = codec.create_configured_reader(verifyCrc, keepChunks, options.maxOutput,
-        maxCrcBytes, keepChunks ? MAX_RETAINED_CHUNKS : DEFAULT_CHUNKS);
+        maxCrcBytes, maxChunks);
       if (handle < 0) throw new Error('Unable to create inspection session');
       try { report = withInput(input, file => readIntoSession(file, handle)); }
       finally { codec.dispose_inspector(handle); }
