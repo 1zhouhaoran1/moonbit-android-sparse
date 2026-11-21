@@ -13,23 +13,29 @@ const command = args.shift();
 const delimiter = args.indexOf('--');
 const jsonRequested = args.slice(0, delimiter < 0 ? args.length : delimiter).includes('--json');
 const usage = {
-  inspect: 'inspect INPUT [--json] [--summary] [--crc|--no-crc] [--max-output N]',
-  validate: 'validate INPUT [--json] [--crc|--no-crc] [--max-output N]',
-  expand: 'expand INPUT OUTPUT [--json] [--crc|--no-crc] [--force] [--max-output N]',
+  inspect: 'inspect INPUT [--json] [--summary] [--crc|--no-crc] [--max-output N] [--max-crc-bytes N]',
+  validate: 'validate INPUT [--json] [--crc|--no-crc] [--max-output N] [--max-crc-bytes N]',
+  expand: 'expand INPUT OUTPUT [--json] [--crc|--no-crc] [--force] [--max-output N] [--max-crc-bytes N]',
   pack: 'pack INPUT OUTPUT [--json] [--force] [--block-size N] [--max-output N]',
 };
 const help = ['Usage: pnpm cli <command> [options]', ...Object.values(usage).map(line => '  pnpm cli ' + line)].join('\n');
 const helpFor = name => Object.hasOwn(usage, name) ? 'Usage: pnpm cli ' + usage[name] : help;
 
 const commandOptions = {
-  inspect: ['--crc', '--no-crc', '--summary', '--max-output'],
-  validate: ['--crc', '--no-crc', '--max-output'],
-  expand: ['--crc', '--no-crc', '--force', '--max-output'],
+  inspect: ['--crc', '--no-crc', '--summary', '--max-output', '--max-crc-bytes'],
+  validate: ['--crc', '--no-crc', '--max-output', '--max-crc-bytes'],
+  expand: ['--crc', '--no-crc', '--force', '--max-output', '--max-crc-bytes'],
   pack: ['--force', '--block-size', '--max-output'],
 };
 
+const numericOptions = {
+  '--block-size': 'blockSize',
+  '--max-output': 'maxOutput',
+  '--max-crc-bytes': 'maxCrcBytes',
+};
+
 function parseOptions(values) {
-  const options = { paths: [], summary: false, crc: false, noCrc: false, force: false, blockSize: 4096, maxOutput: 64 * 1024 * MiB };
+  const options = { paths: [], summary: false, crc: false, noCrc: false, force: false, blockSize: 4096, maxOutput: 64 * 1024 * MiB, maxCrcBytes: undefined };
   for (let index = 0; index < values.length; index++) {
     const value = values[index];
     if (value === '--') {
@@ -47,13 +53,13 @@ function parseOptions(values) {
     else if (value === '--crc') options.crc = true;
     else if (value === '--no-crc') options.noCrc = true;
     else if (value === '--force') options.force = true;
-    else if (value === '--block-size' || value === '--max-output') {
+    else if (Object.hasOwn(numericOptions, value)) {
       const raw = values[++index];
       const number = Number(raw);
       if (!raw || !/^[0-9]+$/.test(raw) || !Number.isSafeInteger(number) || number <= 0) {
         throw new Error(value + ' requires a positive decimal safe integer');
       }
-      options[value === '--block-size' ? 'blockSize' : 'maxOutput'] = number;
+      options[numericOptions[value]] = number;
     } else options.paths.push(value);
   }
   if (options.crc && options.noCrc) throw new Error('Choose either --crc or --no-crc');
@@ -155,6 +161,10 @@ try {
     const needsOutput = command === 'pack' || command === 'expand';
     if (!input || (needsOutput && !output) || options.paths.length !== (needsOutput ? 2 : 1)) throw new Error(helpFor(command));
     const verifyCrc = !options.noCrc && (command !== 'inspect' || options.crc);
+    if (options.maxCrcBytes !== undefined && !verifyCrc) {
+      throw new Error('--max-crc-bytes requires CRC verification');
+    }
+    const maxCrcBytes = options.maxCrcBytes ?? DEFAULT_CRC_BYTES;
     let report;
     codec = await import('./generated/sparse.js');
     if (command === 'pack') {
@@ -170,7 +180,8 @@ try {
       });
     } else if (command === 'expand') {
       report = withInput(input, (inputFile, info) => outputTransaction(input, info, output, options.force, file => {
-        const handle = codec.create_expander(verifyCrc, options.maxOutput, bytes => writeAll(file, bytes));
+        const handle = codec.create_configured_expander(verifyCrc, options.maxOutput, maxCrcBytes,
+          DEFAULT_CHUNKS, bytes => writeAll(file, bytes));
         if (handle < 0) throw new Error('Unable to create expansion session');
         try { return readIntoSession(inputFile, handle); }
         finally { codec.dispose_inspector(handle); }
@@ -178,7 +189,7 @@ try {
     } else {
       const keepChunks = command === 'inspect' && !options.summary;
       const handle = codec.create_configured_reader(verifyCrc, keepChunks, options.maxOutput,
-        DEFAULT_CRC_BYTES, keepChunks ? MAX_RETAINED_CHUNKS : DEFAULT_CHUNKS);
+        maxCrcBytes, keepChunks ? MAX_RETAINED_CHUNKS : DEFAULT_CHUNKS);
       if (handle < 0) throw new Error('Unable to create inspection session');
       try { report = withInput(input, file => readIntoSession(file, handle)); }
       finally { codec.dispose_inspector(handle); }
