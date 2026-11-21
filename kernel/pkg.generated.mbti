@@ -19,15 +19,17 @@ pub fn pack(BytesView, max_output_bytes~ : UInt64, block_size? : UInt32, checksu
 pub fn write_sparse(Array[Piece], emit~ : (Bytes) -> Unit raise, block_size? : UInt32, checksum? : Bool, limits? : Limits) -> Unit raise
 
 // Errors
+#derive(Eq, @debug.Debug)
 pub(all) suberror SparseError {
   Invalid(UInt64, String)
   LimitExceeded(UInt64, String)
-} derive(Eq, @debug.Debug)
+}
 pub fn SparseError::equal(Self, Self) -> Bool
 pub fn SparseError::not_equal(Self, Self) -> Bool
 pub fn SparseError::to_repr(Self) -> @debug.Repr
 
 // Types and methods
+#derive(Eq, @debug.Debug)
 pub(all) struct Chunk {
   index : UInt32
   kind : ChunkKind
@@ -35,17 +37,18 @@ pub(all) struct Chunk {
   output_offset : UInt64
   blocks : UInt32
   total_size : UInt32
-} derive(Eq, @debug.Debug)
+}
 pub fn Chunk::equal(Self, Self) -> Bool
 pub fn Chunk::not_equal(Self, Self) -> Bool
 pub fn Chunk::to_repr(Self) -> @debug.Repr
 
+#derive(Eq, @debug.Debug)
 pub(all) enum ChunkKind {
   Raw
   Fill
   Skip
   Crc32
-} derive(Eq, @debug.Debug)
+}
 pub fn ChunkKind::equal(Self, Self) -> Bool
 pub fn ChunkKind::not_equal(Self, Self) -> Bool
 pub fn ChunkKind::to_repr(Self) -> @debug.Repr
@@ -62,6 +65,7 @@ pub fn Decoder::input_offset(Self) -> UInt64
 pub fn Decoder::new(verify_crc? : Bool, limits? : Limits) -> Self
 pub fn Decoder::output_offset(Self) -> UInt64
 
+#derive(@debug.Debug)
 pub(all) enum Event {
   FileHeader(Header)
   ChunkHeader(Chunk)
@@ -69,9 +73,10 @@ pub(all) enum Event {
   FillData(UInt32, UInt64)
   SkipData(UInt64)
   Checksum(UInt32)
-} derive(@debug.Debug)
+}
 pub fn Event::to_repr(Self) -> @debug.Repr
 
+#derive(Eq, @debug.Debug)
 pub(all) struct Header {
   major_version : Int32
   minor_version : Int32
@@ -81,26 +86,28 @@ pub(all) struct Header {
   total_blocks : UInt32
   total_chunks : UInt32
   image_checksum : UInt32
-} derive(Eq, @debug.Debug)
+}
 pub fn Header::equal(Self, Self) -> Bool
 pub fn Header::expanded_size(Self) -> UInt64
 pub fn Header::not_equal(Self, Self) -> Bool
 pub fn Header::to_repr(Self) -> @debug.Repr
 
+#derive(Eq, @debug.Debug)
 pub(all) struct Limits {
   max_expanded_bytes : UInt64
   max_crc_bytes : UInt64
   max_chunks : UInt32
-} derive(Eq, @debug.Debug)
+}
 pub fn Limits::equal(Self, Self) -> Bool
 pub fn Limits::not_equal(Self, Self) -> Bool
 pub fn Limits::to_repr(Self) -> @debug.Repr
 
+#derive(Eq, @debug.Debug)
 pub(all) enum Piece {
   Data(Bytes)
   Fill(UInt32, UInt32)
   Hole(UInt32)
-} derive(Eq, @debug.Debug)
+}
 pub fn Piece::equal(Self, Self) -> Bool
 pub fn Piece::not_equal(Self, Self) -> Bool
 pub fn Piece::to_repr(Self) -> @debug.Repr

@@ -1,12 +1,14 @@
 ///|
 /// Errors carry the serialized input offset, or zero for an encoding error.
+#derive(Debug, Eq)
 pub(all) suberror SparseError {
   Invalid(UInt64, String)
   LimitExceeded(UInt64, String)
-} derive(Debug, Eq)
+}
 
 ///|
 /// Wire-format fields. Minor versions are accepted when the v1 layout is valid.
+#derive(Debug, Eq)
 pub(all) struct Header {
   major_version : Int32
   minor_version : Int32
@@ -16,7 +18,7 @@ pub(all) struct Header {
   total_blocks : UInt32
   total_chunks : UInt32
   image_checksum : UInt32
-} derive(Debug, Eq)
+}
 
 ///|
 pub fn Header::expanded_size(self : Header) -> UInt64 {
@@ -24,14 +26,16 @@ pub fn Header::expanded_size(self : Header) -> UInt64 {
 }
 
 ///|
+#derive(Debug, Eq)
 pub(all) enum ChunkKind {
   Raw
   Fill
   Skip
   Crc32
-} derive(Debug, Eq)
+}
 
 ///|
+#derive(Debug, Eq)
 pub(all) struct Chunk {
   index : UInt32
   kind : ChunkKind
@@ -39,10 +43,11 @@ pub(all) struct Chunk {
   output_offset : UInt64
   blocks : UInt32
   total_size : UInt32
-} derive(Debug, Eq)
+}
 
 ///|
 /// RawData borrows its input. A sink that retains it must call to_owned().
+#derive(Debug)
 pub(all) enum Event {
   FileHeader(Header)
   ChunkHeader(Chunk)
@@ -50,15 +55,16 @@ pub(all) enum Event {
   FillData(UInt32, UInt64)
   SkipData(UInt64)
   Checksum(UInt32)
-} derive(Debug)
+}
 
 ///|
 /// Logical output, checksum work and chunk counts have separate limits.
+#derive(Debug, Eq)
 pub(all) struct Limits {
   max_expanded_bytes : UInt64
   max_crc_bytes : UInt64
   max_chunks : UInt32
-} derive(Debug, Eq)
+}
 
 ///|
 pub fn default_limits() -> Limits {
@@ -71,11 +77,12 @@ pub fn default_limits() -> Limits {
 
 ///|
 /// Explicit holes are the only source of DONT_CARE chunks.
+#derive(Debug, Eq)
 pub(all) enum Piece {
   Data(Bytes)
   Fill(UInt32, UInt32)
   Hole(UInt32)
-} derive(Debug, Eq)
+}
 
 ///|
 /// Internal endian helpers require a caller-validated range.
