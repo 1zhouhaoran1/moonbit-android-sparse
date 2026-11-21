@@ -16,6 +16,13 @@ const usage = {
 const help = ['Usage: pnpm cli <command> [options]', ...Object.values(usage).map(line => '  pnpm cli ' + line)].join('\n');
 const helpFor = name => Object.hasOwn(usage, name) ? 'Usage: pnpm cli ' + usage[name] : help;
 
+const commandOptions = {
+  inspect: ['--crc', '--no-crc'],
+  validate: ['--crc', '--no-crc'],
+  expand: ['--crc', '--no-crc', '--force', '--max-output'],
+  pack: ['--force', '--block-size', '--max-output'],
+};
+
 function parseOptions(values) {
   const options = { paths: [], json: false, crc: false, noCrc: false, force: false, blockSize: 4096, maxOutput: 64 * 1024 * MiB };
   for (let index = 0; index < values.length; index++) {
@@ -23,6 +30,12 @@ function parseOptions(values) {
     if (value === '--') {
       options.paths.push(...values.slice(index + 1));
       break;
+    }
+    if (value.startsWith('--') && value !== '--json' && !commandOptions[command].includes(value)) {
+      if (Object.values(commandOptions).some(flags => flags.includes(value))) {
+        throw new Error(value + ' is not supported by ' + command);
+      }
+      throw new Error('Unknown option: ' + value);
     }
     if (value === '--json') options.json = true;
     else if (value === '--crc') options.crc = true;
@@ -35,8 +48,7 @@ function parseOptions(values) {
         throw new Error(value + ' requires a positive decimal safe integer');
       }
       options[value === '--block-size' ? 'blockSize' : 'maxOutput'] = number;
-    } else if (value.startsWith('--')) throw new Error(`Unknown option: ${value}`);
-    else options.paths.push(value);
+    } else options.paths.push(value);
   }
   if (options.crc && options.noCrc) throw new Error('Choose either --crc or --no-crc');
   return options;
