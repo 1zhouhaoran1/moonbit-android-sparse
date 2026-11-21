@@ -20,6 +20,10 @@ function parseOptions(values) {
   const options = { paths: [], json: false, crc: false, noCrc: false, force: false, blockSize: 4096, maxOutput: 64 * 1024 * MiB };
   for (let index = 0; index < values.length; index++) {
     const value = values[index];
+    if (value === '--') {
+      options.paths.push(...values.slice(index + 1));
+      break;
+    }
     if (value === '--json') options.json = true;
     else if (value === '--crc') options.crc = true;
     else if (value === '--no-crc') options.noCrc = true;
