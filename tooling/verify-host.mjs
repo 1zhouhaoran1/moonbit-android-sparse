@@ -117,6 +117,23 @@ try {
   assert.equal(JSON.parse(codec.finish_inspector(streamingHandle)).ok, true);
   assert.deepEqual(Buffer.concat(received), largerRaw);
 } finally { codec.dispose_inspector(streamingHandle); }
+const explicitHoles = [];
+const expandedData = [];
+const holeHandle = codec.create_hole_aware_expander(true, expected.length, expected.length, 5,
+  bytes => expandedData.push(Buffer.from(bytes)), size => explicitHoles.push(size));
+try {
+  assert.equal(JSON.parse(codec.feed_inspector(holeHandle, sample)).ok, true);
+  assert.equal(JSON.parse(codec.finish_inspector(holeHandle)).crcStatus, 'verified');
+  assert.deepEqual(explicitHoles, [12288]);
+  assert.deepEqual(Buffer.concat(expandedData), Buffer.concat([expected.subarray(0, 12288), expected.subarray(24576)]));
+} finally { codec.dispose_inspector(holeHandle); }
+const rejectedSkip = codec.create_hole_aware_expander(false, expected.length, 0, 5, () => {},
+  () => { throw new Error('injected skip failure'); });
+try {
+  const failure = JSON.parse(codec.feed_inspector(rejectedSkip, sample));
+  assert.equal(failure.ok, false);
+  assert.match(failure.error.message, /injected skip failure/);
+} finally { codec.dispose_inspector(rejectedSkip); }
 const failingHandle = codec.create_expander(false, largerRaw.length, () => { throw new Error('injected output failure'); });
 try {
   assert.equal(JSON.parse(codec.feed_inspector(failingHandle, largerImage)).ok, false, 'A host sink exception is reported');

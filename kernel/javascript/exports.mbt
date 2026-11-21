@@ -8,6 +8,7 @@ priv struct Session {
   verify_crc : Bool
   keep_chunks : Bool
   output : ((Bytes) -> Unit)?
+  skip : ((Double) -> Unit)?
   mut complete : Bool
   mut saw_checksum : Bool
   mut error : Json?
@@ -43,6 +44,7 @@ fn register(
   keep_chunks : Bool,
   output : ((Bytes) -> Unit)?,
   limits : @sparse.Limits,
+  skip~ : ((Double) -> Unit)? = None,
 ) -> Int32 {
   if registry.sessions.length() >= 16 {
     return -1
@@ -57,6 +59,7 @@ fn register(
     verify_crc,
     keep_chunks,
     output,
+    skip,
     complete: false,
     saw_checksum: false,
     error: None,
@@ -131,6 +134,23 @@ pub fn create_configured_expander(
 }
 
 ///|
+/// The skip sink advances through explicit holes without emitting zero buffers.
+#export_name("create_hole_aware_expander")
+pub fn create_hole_aware_expander(
+  verify_crc : Bool,
+  max_output : Double,
+  max_crc : Double,
+  max_chunks : Double,
+  output : (Bytes) -> Unit,
+  skip : (Double) -> Unit,
+) -> Int32 {
+  guard host_limits(max_output, max_crc, max_chunks) is Some(limits) else {
+    return -1
+  }
+  register(verify_crc, false, Some(output), limits, skip=Some(skip))
+}
+
+///|
 /// The synchronous host sink enables bounded streaming file expansion.
 #export_name("create_expander")
 pub fn create_expander(
@@ -151,6 +171,10 @@ pub fn create_expander(
 ///|
 extern "js" fn try_output(output : (Bytes) -> Unit, data : Bytes) -> String =
   #| (output, data) => { try { output(data); return ""; } catch (error) { return "Output sink failed: " + String(error); } }
+
+///|
+extern "js" fn try_skip(skip : (Double) -> Unit, size : Double) -> String =
+  #| (skip, size) => { try { skip(size); return ""; } catch (error) { return "Output skip failed: " + String(error); } }
 
 ///|
 fn write_output(output : (Bytes) -> Unit, data : Bytes) -> Unit raise {
@@ -229,9 +253,18 @@ fn accept_event(session : Session, event : @sparse.Event) -> Unit raise {
         None => ()
       }
     @sparse.SkipData(size) =>
-      match session.output {
-        Some(output) => emit_pattern(output, 0U, size)
-        None => ()
+      match session.skip {
+        Some(skip) => {
+          let failure = try_skip(skip, size.to_double())
+          if failure != "" {
+            raise @sparse.Invalid(0UL, failure)
+          }
+        }
+        None =>
+          match session.output {
+            Some(output) => emit_pattern(output, 0U, size)
+            None => ()
+          }
       }
     _ => ()
   }
