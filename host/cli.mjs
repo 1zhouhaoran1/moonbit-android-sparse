@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { openSync, closeSync, readSync, writeSync, readFileSync, statSync, existsSync, linkSync, renameSync, unlinkSync } from 'node:fs';
+import { openSync, closeSync, readSync, writeSync, fstatSync, statSync, constants, existsSync, linkSync, renameSync, unlinkSync } from 'node:fs';
 import { resolve, dirname, join, basename } from 'node:path';
 import { randomUUID } from 'node:crypto';
 let codec;
@@ -66,19 +66,40 @@ function requireOk(text) {
   return result;
 }
 
-function readIntoSession(input, handle) {
-  const file = openSync(input, 'r');
+function withInput(path, operation) {
+  if (!statSync(path).isFile()) throw new Error('Input must be a regular file');
+  const file = openSync(path, constants.O_RDONLY | (constants.O_NONBLOCK ?? 0));
   try {
-    const buffer = Buffer.allocUnsafe(MiB);
-    for (;;) {
-      const length = readSync(file, buffer, 0, buffer.length, null);
-      if (length === 0) break;
-      requireOk(codec.feed_inspector(handle, buffer.subarray(0, length)));
-    }
-    return requireOk(codec.finish_inspector(handle));
+    const info = fstatSync(file, { bigint: true });
+    if (!info.isFile()) throw new Error('Input must be a regular file');
+    return operation(file, info);
   } finally {
     closeSync(file);
   }
+}
+
+function readIntoSession(file, handle) {
+  const buffer = Buffer.allocUnsafe(MiB);
+  for (;;) {
+    const length = readSync(file, buffer, 0, buffer.length, null);
+    if (length === 0) break;
+    requireOk(codec.feed_inspector(handle, buffer.subarray(0, length)));
+  }
+  return requireOk(codec.finish_inspector(handle));
+}
+
+function readRaw(file, size) {
+  const buffer = Buffer.allocUnsafe(size);
+  let offset = 0;
+  while (offset < size) {
+    const length = readSync(file, buffer, offset, size - offset, null);
+    if (length === 0) throw new Error('Raw input became shorter during packing');
+    offset += length;
+  }
+  if (readSync(file, Buffer.alloc(1), 0, 1, null) !== 0) {
+    throw new Error('Raw input grew during packing');
+  }
+  return buffer;
 }
 
 function writeAll(file, data) {
@@ -125,30 +146,31 @@ try {
     const [input, output] = options.paths;
     const needsOutput = command === 'pack' || command === 'expand';
     if (!input || (needsOutput && !output) || options.paths.length !== (needsOutput ? 2 : 1)) throw new Error(helpFor(command));
-    if (!statSync(input).isFile()) throw new Error('Input must be a regular file');
     const verifyCrc = !options.noCrc && (command !== 'inspect' || options.crc);
     let report;
     codec = await import('./generated/sparse.js');
     if (command === 'pack') {
       if (options.blockSize > 0x7fffffff || options.blockSize % 4 !== 0) throw new Error('Block size must be a positive multiple of four within signed 32-bit range');
-      const size = statSync(input).size;
-      if (size > 64 * MiB) throw new Error('The convenience pack command accepts at most 64 MiB of raw input');
-      if (size === 0 || size % options.blockSize !== 0) throw new Error('Raw input must contain complete blocks; partial final blocks are rejected');
-      const packed = codec.pack_bytes(readFileSync(input), options.blockSize);
-      if (packed.length > options.maxOutput) throw new Error('Serialized output exceeds --max-output');
-      outputTransaction(input, output, options.force, file => writeAll(file, packed));
-      report = { ok: true, command, inputBytes: String(size), outputBytes: String(packed.length), output: resolve(output) };
+      report = withInput(input, (inputFile, info) => {
+        if (info.size > BigInt(64 * MiB)) throw new Error('The convenience pack command accepts at most 64 MiB of raw input');
+        const size = Number(info.size);
+        if (size === 0 || size % options.blockSize !== 0) throw new Error('Raw input must contain complete blocks; partial final blocks are rejected');
+        const packed = codec.pack_bytes(readRaw(inputFile, size), options.blockSize);
+        if (packed.length > options.maxOutput) throw new Error('Serialized output exceeds --max-output');
+        outputTransaction(input, output, options.force, file => writeAll(file, packed));
+        return { ok: true, command, inputBytes: String(size), outputBytes: String(packed.length), output: resolve(output) };
+      });
     } else if (command === 'expand') {
-      report = outputTransaction(input, output, options.force, file => {
+      report = withInput(input, inputFile => outputTransaction(input, output, options.force, file => {
         const handle = codec.create_expander(verifyCrc, options.maxOutput, bytes => writeAll(file, bytes));
         if (handle < 0) throw new Error('Unable to create expansion session');
-        try { return readIntoSession(input, handle); }
+        try { return readIntoSession(inputFile, handle); }
         finally { codec.dispose_inspector(handle); }
-      });
+      }));
     } else {
       const handle = codec.create_inspector(verifyCrc);
       if (handle < 0) throw new Error('Unable to create inspection session');
-      try { report = readIntoSession(input, handle); }
+      try { report = withInput(input, file => readIntoSession(file, handle)); }
       finally { codec.dispose_inspector(handle); }
     }
     if (jsonRequested) console.log(JSON.stringify(report, null, 2));
