@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { openSync, closeSync, readSync, writeSync, fstatSync, statSync, constants, existsSync, linkSync, renameSync, unlinkSync } from 'node:fs';
+import { openSync, closeSync, readSync, writeSync, fstatSync, ftruncateSync, statSync, constants, existsSync, linkSync, renameSync, unlinkSync } from 'node:fs';
 import { resolve, dirname, join, basename } from 'node:path';
 import { randomUUID } from 'node:crypto';
 let codec;
@@ -15,7 +15,7 @@ const jsonRequested = args.slice(0, delimiter < 0 ? args.length : delimiter).inc
 const usage = {
   inspect: 'inspect INPUT [--json] [--summary] [--crc|--no-crc] [--max-output N] [--max-crc-bytes N] [--max-chunks N]',
   validate: 'validate INPUT [--json] [--crc|--no-crc] [--max-output N] [--max-crc-bytes N] [--max-chunks N]',
-  expand: 'expand INPUT OUTPUT [--json] [--crc|--no-crc] [--force] [--max-output N] [--max-crc-bytes N] [--max-chunks N]',
+  expand: 'expand INPUT OUTPUT [--json] [--crc|--no-crc] [--force] [--seek-holes] [--max-output N] [--max-crc-bytes N] [--max-chunks N]',
   pack: 'pack INPUT OUTPUT [--json] [--force] [--block-size N] [--max-output N]',
 };
 const help = ['Usage: pnpm cli <command> [options]', ...Object.values(usage).map(line => '  pnpm cli ' + line)].join('\n');
@@ -24,7 +24,7 @@ const helpFor = name => Object.hasOwn(usage, name) ? 'Usage: pnpm cli ' + usage[
 const commandOptions = {
   inspect: ['--crc', '--no-crc', '--summary', '--max-output', '--max-crc-bytes', '--max-chunks'],
   validate: ['--crc', '--no-crc', '--max-output', '--max-crc-bytes', '--max-chunks'],
-  expand: ['--crc', '--no-crc', '--force', '--max-output', '--max-crc-bytes', '--max-chunks'],
+  expand: ['--crc', '--no-crc', '--force', '--seek-holes', '--max-output', '--max-crc-bytes', '--max-chunks'],
   pack: ['--force', '--block-size', '--max-output'],
 };
 
@@ -54,6 +54,7 @@ function parseOptions(values) {
     else if (value === '--crc') options.crc = true;
     else if (value === '--no-crc') options.noCrc = true;
     else if (value === '--force') options.force = true;
+    else if (value === '--seek-holes') options.seekHoles = true;
     else if (Object.hasOwn(numericOptions, value)) {
       const raw = values[++index];
       const number = Number(raw);
@@ -113,10 +114,11 @@ function readRaw(file, size) {
   return buffer;
 }
 
-function writeAll(file, data) {
+function writeAll(file, data, position = null) {
   let offset = 0;
   while (offset < data.length) {
-    const written = writeSync(file, data, offset, data.length - offset);
+    const written = writeSync(file, data, offset, data.length - offset,
+      position === null ? null : position + offset);
     if (written <= 0) throw new Error('Output stopped accepting data');
     offset += written;
   }
@@ -187,11 +189,22 @@ try {
       });
     } else if (command === 'expand') {
       report = withInput(input, (inputFile, info) => outputTransaction(input, info, output, options.force, file => {
-        const handle = codec.create_configured_expander(verifyCrc, options.maxOutput, maxCrcBytes,
-          maxChunks, bytes => writeAll(file, bytes));
+        const limits = [verifyCrc, options.maxOutput, maxCrcBytes, maxChunks];
+        let position = 0;
+        const handle = options.seekHoles
+          ? codec.create_hole_aware_expander(...limits, bytes => {
+              writeAll(file, bytes, position);
+              position += bytes.length;
+            }, skip => { position += skip; })
+          : codec.create_configured_expander(...limits, bytes => writeAll(file, bytes));
         if (handle < 0) throw new Error('Unable to create expansion session');
-        try { return readIntoSession(inputFile, handle); }
-        finally { codec.dispose_inspector(handle); }
+        try {
+          const result = readIntoSession(inputFile, handle);
+          if (options.seekHoles) ftruncateSync(file, position);
+          return result;
+        } finally {
+          codec.dispose_inspector(handle);
+        }
       }));
     } else {
       const handle = codec.create_configured_reader(verifyCrc, keepChunks, options.maxOutput,
