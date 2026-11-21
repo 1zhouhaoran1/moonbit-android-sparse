@@ -12,6 +12,6 @@
     "test:native": "moon check --target native --deny-warn && moon test --target native",
     "cli": "node host/cli.mjs",
     "sample": "node host/sample.mjs",
-    "test:host": "node tooling/verify-host.mjs"
+    "test:host": "pnpm run build:codec && node tooling/verify-host.mjs"
   }
 }
