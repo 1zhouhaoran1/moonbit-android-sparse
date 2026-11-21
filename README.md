@@ -4,7 +4,7 @@
 
 读取 Android sparse 镜像布局、检查完整性，并在 sparse 与完整块 raw 文件之间转换。增量编解码核心使用纯 MoonBit 编写，Node 命令行与本地浏览器检查器共用其 JavaScript 桥。
 
-模块名：`1zhouhaoran1/android_sparse`。源码保存在[项目私有仓库](https://github.com/1zhouhaoran1/moonbit-android-sparse)。模块尚未发布至 Mooncakes。
+模块名：`1zhouhaoran1/android_sparse`。源码见 [GitHub 仓库](https://github.com/1zhouhaoran1/moonbit-android-sparse)。模块尚未发布至 Mooncakes。
 
 ## 从一份镜像开始
 
@@ -31,6 +31,8 @@ pnpm cli pack output/expanded.raw output/repacked.sparse.img --block-size 4096
 
 `validate`、`expand` 默认验证 CRC；`inspect` 需加 `--crc`。这三条命令可用 `--no-crc` 关闭校验计算；`pack` 始终写入 CRC。转换先写临时文件，仅在成功后发布目标；覆盖已有目标需 `--force`，输入输出路径必须不同。
 
+使用 `--summary` 可检查超过 10,000 个 chunk 的镜像并查看各类型的逻辑空间占用。`validate` 始终输出摘要。`expand --seek-holes` 可以跳过显式空洞的写入，输出的逻辑字节与普通展开一致。
+
 pack 只接受非空完整块，拒绝不足整块的尾部。便捷命令最多持有 64 MiB raw 输入，序列化输出也最多 64 MiB。命令选项见[操作配方](handbook/command-recipes.md)。
 
 ## 分清三种大小
@@ -41,7 +43,7 @@ pack 只接受非空完整块，拒绝不足整块的尾部。便捷命令最多
 | 逻辑字节 | 块数乘块大小，包含跳过区域 | 核心/检查器展开上限 64 GiB |
 | CRC 计算量 | 完整性校验实际处理的展开前缀 | 256 MiB，独立于逻辑大小限额 |
 
-核心调用者可独立设置限额，默认最多 1,000,000 个 chunk；检查器/校验器最多保留 10,000 个。Node 展开每次向 sink 输出不超过 64 KiB。不实体化逻辑内容即可检查巨大空洞，但计算空洞 CRC 仍需与展开字节数成比例的工作。
+核心调用者可独立设置限额，默认最多 1,000,000 个 chunk；详细检查最多保留 10,000 行。摘要检查、校验和展开默认允许 1,000,000 个 chunk。Node 展开每次向 sink 输出不超过 64 KiB。不实体化逻辑内容即可检查巨大空洞，但计算空洞 CRC 仍需与展开字节数成比例的工作。
 
 **跳过区域不等于请求写零。** 核心保留 `SkipData`，只有显式 `Hole` 在写出时成为 DONT_CARE；字面零输入仍是 RAW 或 FILL(0)。向新 raw 文件展开时，跳过区域填零，这不定义已有设备应如何更新。[镜像合同](handbook/image-contract.md)解释其差别及兼容策略。
 
@@ -62,8 +64,8 @@ provenance/discovery/   注明日期的公开检索记录
 
 ## 证据能说明什么
 
-已记录的本地运行通过 `pnpm test`：wasm-gc、JavaScript 各 32 项测试，且 `pnpm test:host`、`pnpm build` 通过。浏览器检查覆盖镜像检查、CRC、筛选、分配图交互、JSON 导出、错误及取消后恢复；桌面/手机审阅确认手机无横向溢出、console error 为零。
+核心测试在 wasm-gc、JavaScript 和 Windows native 各通过 32 项。 `pnpm test:host`、`pnpm build` 通过。浏览器检查覆盖镜像检查、CRC、筛选、分配图交互、JSON 导出、错误及取消后恢复；桌面/手机审阅确认手机无横向溢出、console error 为零。
 
-独立 AOSP 执行、native 主机适配、CI 和完整发布验收仍待完成。参考准备流程生成语料/哈希，标记 `aospExecuted: false`，没有执行 AOSP。[验证台账](handbook/verification-ledger.md)分别记录本地结果和剩余要求。
+独立 AOSP 执行、native 主机适配和完整发布验收仍待完成。参考准备流程生成语料/哈希，标记 `aospExecuted: false`，没有执行 AOSP。[验证台账](handbook/verification-ledger.md)分别记录本地结果和剩余要求。
 
 Android sparse-v1 是存储/传输容器。范围排除 resparse、fastboot、USB、设备写入、ext4/EROFS、dynamic-super、boot-image 解析和任意压缩封装。[格式背景](handbook/format-context.md)记录 AOSP 源码固定版本、查重及许可依据。代码采用 Apache-2.0，保留 `LICENSE` 和适用 `NOTICE` 条目。

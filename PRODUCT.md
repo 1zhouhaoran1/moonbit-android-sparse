@@ -43,4 +43,4 @@ README.md 描述可运行的编解码器；handbook/verification-ledger.md 区�
 
 ## 未定事项
 
-仓库与模块归属 1zhouhaoran1。浏览器已实现文件检查流程；托管方式与公开发布仍未确定。
+仓库与模块归属 1zhouhaoran1。源码仓库已公开，浏览器检查器可在本地运行。
