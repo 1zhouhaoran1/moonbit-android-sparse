@@ -10,7 +10,7 @@ const command = args.shift();
 const delimiter = args.indexOf('--');
 const jsonRequested = args.slice(0, delimiter < 0 ? args.length : delimiter).includes('--json');
 const usage = {
-  inspect: 'inspect INPUT [--json] [--crc|--no-crc]',
+  inspect: 'inspect INPUT [--json] [--summary] [--crc|--no-crc]',
   validate: 'validate INPUT [--json] [--crc|--no-crc]',
   expand: 'expand INPUT OUTPUT [--json] [--crc|--no-crc] [--force] [--max-output N]',
   pack: 'pack INPUT OUTPUT [--json] [--force] [--block-size N] [--max-output N]',
@@ -19,14 +19,14 @@ const help = ['Usage: pnpm cli <command> [options]', ...Object.values(usage).map
 const helpFor = name => Object.hasOwn(usage, name) ? 'Usage: pnpm cli ' + usage[name] : help;
 
 const commandOptions = {
-  inspect: ['--crc', '--no-crc'],
+  inspect: ['--crc', '--no-crc', '--summary'],
   validate: ['--crc', '--no-crc'],
   expand: ['--crc', '--no-crc', '--force', '--max-output'],
   pack: ['--force', '--block-size', '--max-output'],
 };
 
 function parseOptions(values) {
-  const options = { paths: [], crc: false, noCrc: false, force: false, blockSize: 4096, maxOutput: 64 * 1024 * MiB };
+  const options = { paths: [], summary: false, crc: false, noCrc: false, force: false, blockSize: 4096, maxOutput: 64 * 1024 * MiB };
   for (let index = 0; index < values.length; index++) {
     const value = values[index];
     if (value === '--') {
@@ -40,7 +40,8 @@ function parseOptions(values) {
       throw new Error('Unknown option: ' + value);
     }
     if (value === '--json') continue;
-    if (value === '--crc') options.crc = true;
+    if (value === '--summary') options.summary = true;
+    else if (value === '--crc') options.crc = true;
     else if (value === '--no-crc') options.noCrc = true;
     else if (value === '--force') options.force = true;
     else if (value === '--block-size' || value === '--max-output') {
@@ -172,7 +173,7 @@ try {
         finally { codec.dispose_inspector(handle); }
       }));
     } else {
-      const handle = command === 'validate'
+      const handle = command === 'validate' || options.summary
         ? codec.create_validator(verifyCrc)
         : codec.create_inspector(verifyCrc);
       if (handle < 0) throw new Error('Unable to create inspection session');

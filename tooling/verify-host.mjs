@@ -42,6 +42,9 @@ assert.equal(cli('inspect', manyChunksInput).status, 1, 'Detailed inspection cap
 const largeValidation = cli('validate', manyChunksInput, '--json', '--no-crc');
 assert.equal(largeValidation.status, 0, largeValidation.stderr || largeValidation.stdout);
 assert.equal(JSON.parse(largeValidation.stdout).chunksRead, 10001);
+const largeSummary = cli('inspect', manyChunksInput, '--summary', '--json');
+assert.equal(largeSummary.status, 0, largeSummary.stderr || largeSummary.stdout);
+assert.deepEqual(JSON.parse(largeSummary.stdout), JSON.parse(largeValidation.stdout));
 assert.equal(cli('expand', input, raw).status, 0);
 const expected = Buffer.alloc(32768);
 for (let i = 0; i < 4096; i++) expected[i] = (i * 37 + Math.floor(i / 17)) % 256;
