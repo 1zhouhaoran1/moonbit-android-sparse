@@ -242,6 +242,8 @@ fn header_json(header : @sparse.Header) -> Json {
   {
     "majorVersion": header.major_version,
     "minorVersion": header.minor_version,
+    "fileHeaderSize": header.file_header_size,
+    "chunkHeaderSize": header.chunk_header_size,
     "blockSize": header.block_size.to_double(),
     "totalBlocks": header.total_blocks.to_double(),
     "totalChunks": header.total_chunks.to_double(),

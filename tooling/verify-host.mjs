@@ -22,6 +22,16 @@ const inspected = cli('inspect', input, '--json', '--crc');
 assert.equal(inspected.status, 0, inspected.stderr || inspected.stdout);
 const report = JSON.parse(inspected.stdout);
 assert.equal(report.crcStatus, 'verified');
+assert.equal(report.header.fileHeaderSize, 28);
+assert.equal(report.header.chunkHeaderSize, 12);
+const extendedSample = Buffer.concat([sample.subarray(0, 28), Buffer.alloc(4), sample.subarray(28)]);
+extendedSample.writeUInt16LE(32, 8);
+const extendedInput = join(directory, 'extended-header.img');
+writeFileSync(extendedInput, extendedSample);
+const extendedResult = cli('inspect', extendedInput, '--json', '--crc');
+assert.equal(extendedResult.status, 0, extendedResult.stderr || extendedResult.stdout);
+assert.equal(JSON.parse(extendedResult.stdout).header.fileHeaderSize, 32);
+assert.equal(JSON.parse(extendedResult.stdout).chunks[0].inputOffset, '32');
 for (const command of ['inspect', 'validate']) {
   const rejected = cli(command, input, '--json', '--max-output', '32767');
   assert.equal(rejected.status, 1);
