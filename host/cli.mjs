@@ -2,12 +2,19 @@
 import { openSync, closeSync, readSync, writeSync, readFileSync, statSync, existsSync, linkSync, renameSync, unlinkSync } from 'node:fs';
 import { resolve, dirname, join, basename } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import * as codec from './generated/sparse.js';
+let codec;
 
 const MiB = 1024 * 1024;
 const args = process.argv.slice(2).filter((arg, index) => !(index === 0 && arg === '--'));
 const command = args.shift();
-const help = 'Usage: pnpm cli <inspect|validate|expand|pack> INPUT [OUTPUT] [--json] [--crc|--no-crc] [--force] [--block-size N] [--max-output N]';
+const usage = {
+  inspect: 'inspect INPUT [--json] [--crc|--no-crc]',
+  validate: 'validate INPUT [--json] [--crc|--no-crc]',
+  expand: 'expand INPUT OUTPUT [--json] [--crc|--no-crc] [--force] [--max-output N]',
+  pack: 'pack INPUT OUTPUT [--json] [--force] [--block-size N] [--max-output N]',
+};
+const help = ['Usage: pnpm cli <command> [options]', ...Object.values(usage).map(line => '  pnpm cli ' + line)].join('\n');
+const helpFor = name => Object.hasOwn(usage, name) ? 'Usage: pnpm cli ' + usage[name] : help;
 
 function parseOptions(values) {
   const options = { paths: [], json: false, crc: false, noCrc: false, force: false, blockSize: 4096, maxOutput: 64 * 1024 * MiB };
@@ -89,16 +96,19 @@ function outputTransaction(input, destination, force, operation) {
 let options;
 try {
   if (!command || command === '--help' || command === 'help') {
-    console.log(help);
+    console.log(command === 'help' ? helpFor(args[0]) : help);
+  } else if (Object.hasOwn(usage, command) && args[0] === '--help') {
+    console.log(helpFor(command));
   } else {
-    if (!['inspect', 'validate', 'expand', 'pack'].includes(command)) throw new Error(help);
+    if (!Object.hasOwn(usage, command)) throw new Error(help);
     options = parseOptions(args);
     const [input, output] = options.paths;
     const needsOutput = command === 'pack' || command === 'expand';
-    if (!input || (needsOutput && !output) || options.paths.length !== (needsOutput ? 2 : 1)) throw new Error(help);
+    if (!input || (needsOutput && !output) || options.paths.length !== (needsOutput ? 2 : 1)) throw new Error(helpFor(command));
     if (!statSync(input).isFile()) throw new Error('Input must be a regular file');
     const verifyCrc = !options.noCrc && (command !== 'inspect' || options.crc);
     let report;
+    codec = await import('./generated/sparse.js');
     if (command === 'pack') {
       if (options.blockSize > 0x7fffffff || options.blockSize % 4 !== 0) throw new Error('Block size must be a positive multiple of four within signed 32-bit range');
       const size = statSync(input).size;
