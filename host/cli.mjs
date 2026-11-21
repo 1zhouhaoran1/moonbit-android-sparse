@@ -7,6 +7,8 @@ let codec;
 const MiB = 1024 * 1024;
 const args = process.argv.slice(2).filter((arg, index) => !(index === 0 && arg === '--'));
 const command = args.shift();
+const delimiter = args.indexOf('--');
+const jsonRequested = args.slice(0, delimiter < 0 ? args.length : delimiter).includes('--json');
 const usage = {
   inspect: 'inspect INPUT [--json] [--crc|--no-crc]',
   validate: 'validate INPUT [--json] [--crc|--no-crc]',
@@ -24,7 +26,7 @@ const commandOptions = {
 };
 
 function parseOptions(values) {
-  const options = { paths: [], json: false, crc: false, noCrc: false, force: false, blockSize: 4096, maxOutput: 64 * 1024 * MiB };
+  const options = { paths: [], crc: false, noCrc: false, force: false, blockSize: 4096, maxOutput: 64 * 1024 * MiB };
   for (let index = 0; index < values.length; index++) {
     const value = values[index];
     if (value === '--') {
@@ -37,8 +39,8 @@ function parseOptions(values) {
       }
       throw new Error('Unknown option: ' + value);
     }
-    if (value === '--json') options.json = true;
-    else if (value === '--crc') options.crc = true;
+    if (value === '--json') continue;
+    if (value === '--crc') options.crc = true;
     else if (value === '--no-crc') options.noCrc = true;
     else if (value === '--force') options.force = true;
     else if (value === '--block-size' || value === '--max-output') {
@@ -112,7 +114,6 @@ function outputTransaction(input, destination, force, operation) {
   }
 }
 
-let options;
 try {
   if (!command || command === '--help' || command === 'help') {
     console.log(command === 'help' ? helpFor(args[0]) : help);
@@ -120,7 +121,7 @@ try {
     console.log(helpFor(command));
   } else {
     if (!Object.hasOwn(usage, command)) throw new Error(help);
-    options = parseOptions(args);
+    const options = parseOptions(args);
     const [input, output] = options.paths;
     const needsOutput = command === 'pack' || command === 'expand';
     if (!input || (needsOutput && !output) || options.paths.length !== (needsOutput ? 2 : 1)) throw new Error(helpFor(command));
@@ -150,12 +151,12 @@ try {
       try { report = readIntoSession(input, handle); }
       finally { codec.dispose_inspector(handle); }
     }
-    if (options.json) console.log(JSON.stringify(report, null, 2));
+    if (jsonRequested) console.log(JSON.stringify(report, null, 2));
     else if (command === 'pack') console.log(`Packed ${report.inputBytes} bytes into ${report.outputBytes} bytes: ${report.output}`);
     else console.log(`${command}: valid; ${report.chunksRead} chunks; ${report.outputBytes} logical bytes; CRC ${report.crcStatus}`);
   }
 } catch (error) {
-  if (options?.json) console.log(JSON.stringify(error.report ?? { ok: false, error: { offset: '0', message: error.message ?? String(error) } }, null, 2));
+  if (jsonRequested) console.log(JSON.stringify(error.report ?? { ok: false, error: { offset: '0', message: error.message ?? String(error) } }, null, 2));
   else console.error(error.message ?? String(error));
   process.exitCode = 1;
 }
