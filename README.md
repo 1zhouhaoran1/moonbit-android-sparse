@@ -4,7 +4,15 @@
 
 读取 Android sparse 镜像布局、检查完整性，并在 sparse 与完整块 raw 文件之间转换。增量编解码核心使用纯 MoonBit 编写，Node 命令行与本地浏览器检查器共用其 JavaScript 桥。
 
-模块名：`1zhouhaoran1/android_sparse`。源码见 [GitHub 仓库](https://github.com/1zhouhaoran1/moonbit-android-sparse)。模块尚未发布至 Mooncakes。
+模块名为 `1zhouhaoran1/android_sparse`。源码见 [GitHub 仓库](https://github.com/1zhouhaoran1/moonbit-android-sparse)。
+
+## 在 MoonBit 项目中安装
+
+```sh
+moon add 1zhouhaoran1/android_sparse@0.1.0
+```
+
+将 `1zhouhaoran1/android_sparse` 加到使用它的 `moon.pkg` 导入列表。`Decoder` 接收分段输入并产生解析事件，`write_sparse` 和 `pack` 用于生成 sparse 镜像。命令行工具和浏览器检查器从 GitHub 仓库运行。
 
 ## 从一份镜像开始
 
